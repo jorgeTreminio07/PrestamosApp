@@ -3,9 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity, // Para el ícono de los 3 puntos
-  Modal, // Para el menú desplegable
-  TouchableWithoutFeedback, // Para cerrar el modal al tocar fuera
+  TouchableOpacity,
+  Modal,
+  TouchableWithoutFeedback,
+  Alert, // 💡 IMPORTADO: Añadimos Alert para poder personalizar el título
 } from "react-native";
 import Cliente from "../../../domain/models/Cliente";
 // Usamos Feather de react-native-vector-icons (o Expo)
@@ -21,14 +22,21 @@ export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
   // 💡 Estado para controlar la visibilidad del menú de opciones
   const [menuVisible, setMenuVisible] = useState(false);
 
-  // 💡 Función para ver los detalles (como estaba en el botón "Ver")
+  // 💡 Función para ver los detalles (corregida para usar Alert.alert)
   const handleView = () => {
     setMenuVisible(false);
-    alert(
-      `Detalles de ${cliente.nombre}:\n\n` +
-        `Cédula: ${cliente.cedula}\n` +
-        `Dirección: ${cliente.direccion}\n` +
-        `Teléfono: ${cliente.numeroTelefono}`
+
+    const detailsText =
+      `Nombre: ${cliente.nombre}\n` +
+      `Cédula: ${cliente.cedula}\n` +
+      `Dirección: ${cliente.direccion}\n` +
+      `Teléfono: ${cliente.numeroTelefono}`;
+
+    // 💡 CAMBIO CLAVE: Usamos Alert.alert(Título, Mensaje, Botones)
+    Alert.alert(
+      `Detalles Cliente`, // El encabezado personalizado
+      detailsText,
+      [{ text: "Cerrar" }] // Botón para cerrar la alerta
     );
   };
 

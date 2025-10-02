@@ -13,6 +13,21 @@ import Cliente from "../../domain/models/Cliente";
 import ClienteItem from "./components/ClienteItem";
 import ClienteModal from "./components/ClienteModal";
 
+// 💡 Nuevo componente para la Fila de Encabezados
+const ListHeader = () => (
+  <View style={headerStyles.headerContainer}>
+    {/* Columna Nombre: flex: 1 para ocupar la mayor parte del espacio */}
+    <Text style={[headerStyles.headerText, headerStyles.nombreColumn]}>
+      Nombre
+    </Text>
+
+    {/* Columna Acciones: Ancho fijo para alinearse con el ícono de 3 puntos */}
+    <Text style={[headerStyles.headerText, headerStyles.accionesColumn]}>
+      Acciones
+    </Text>
+  </View>
+);
+
 export default function ClientesScreen() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [search, setSearch] = useState("");
@@ -21,32 +36,26 @@ export default function ClientesScreen() {
     undefined
   );
 
-  // 💡 1. Convertimos a una función asíncrona y usamos useCallback para estabilidad
   const loadClientes = useCallback(async () => {
     try {
-      // 💡 Usamos await para esperar el Promise
       const data = await ClienteRepository.getAll();
       setClientes(data);
     } catch (error) {
       console.error("Error al cargar clientes:", error);
       Alert.alert("Error", "No se pudieron cargar los clientes.");
     }
-  }, []); // Dependencias vacías, solo se crea una vez
+  }, []);
 
-  // 💡 2. Usamos useEffect para cargar los datos al inicio
   useEffect(() => {
     loadClientes();
-  }, [loadClientes]); // Agregamos loadClientes como dependencia del hook
+  }, [loadClientes]);
 
-  // 💡 3. Hacemos handleSearch asíncrono
   const handleSearch = async (text: string) => {
     setSearch(text);
     try {
       if (text.trim() === "") {
-        // Si la búsqueda está vacía, cargamos todos los clientes
         loadClientes();
       } else {
-        // De lo contrario, buscamos
         const data = await ClienteRepository.search(text);
         setClientes(data);
       }
@@ -55,18 +64,14 @@ export default function ClientesScreen() {
     }
   };
 
-  // 💡 4. Hacemos handleSave asíncrono y manejamos create/update
   const handleSave = async (cliente: Cliente) => {
     try {
       if (clienteToEdit) {
-        // Actualizar
         await ClienteRepository.update(cliente);
       } else {
-        // Crear
         await ClienteRepository.create(cliente);
       }
 
-      // Una vez completada la operación (await), recargamos la lista y cerramos el modal
       loadClientes();
       setModalVisible(false);
       setClienteToEdit(undefined);
@@ -85,10 +90,8 @@ export default function ClientesScreen() {
     setModalVisible(true);
   };
 
-  // 💡 5. Hacemos handleDelete asíncrono
   const handleDelete = async (id: string) => {
     try {
-      // Confirmación antes de eliminar (opcional, pero buena práctica)
       Alert.alert(
         "Confirmar Eliminación",
         "¿Estás seguro de que quieres eliminar este cliente?",
@@ -97,9 +100,7 @@ export default function ClientesScreen() {
           {
             text: "Eliminar",
             onPress: async () => {
-              // Esperamos a que la eliminación termine
               await ClienteRepository.delete(id);
-              // Luego recargamos
               loadClientes();
               Alert.alert("Éxito", "Cliente eliminado correctamente.");
             },
@@ -131,6 +132,8 @@ export default function ClientesScreen() {
       <FlatList
         data={clientes}
         keyExtractor={(item) => item.id}
+        // 💡 Renderizamos la cabecera aquí
+        ListHeaderComponent={ListHeader}
         renderItem={({ item }) => (
           <ClienteItem
             cliente={item}
@@ -138,7 +141,6 @@ export default function ClientesScreen() {
             onDelete={handleDelete}
           />
         )}
-        // Opcional: mostrar un mensaje si la lista está vacía
         ListEmptyComponent={() => (
           <Text style={styles.emptyText}>No hay clientes registrados.</Text>
         )}
@@ -155,6 +157,32 @@ export default function ClientesScreen() {
     </View>
   );
 }
+
+// 💡 Estilos del Encabezado (con margen superior aplicado)
+const headerStyles = StyleSheet.create({
+  headerContainer: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: "#e0e0e0", // Fondo del encabezado
+    borderBottomWidth: 1,
+    borderColor: "#b0b0b0",
+    // 🚀 CAMBIO APLICADO: Separación del botón
+    marginTop: 15,
+  },
+  headerText: {
+    fontWeight: "bold",
+    fontSize: 14,
+    color: "#333",
+  },
+  nombreColumn: {
+    flex: 1, // Ocupa la mayor parte del espacio
+  },
+  accionesColumn: {
+    textAlign: "right",
+    width: 60, // Este valor debe alinearse con el espacio ocupado por el ícono
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
