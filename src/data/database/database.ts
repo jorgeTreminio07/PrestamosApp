@@ -19,7 +19,7 @@ export const initDB = async (): Promise<void> => {
     // Esperamos a que la conexión se complete
     const db = await dbPromise;
 
-    // Ejecutamos el comando de creación de tabla.
+    // Ejecutamos el comando de creación de tabla clientes.
     await db.execAsync(
         `CREATE TABLE IF NOT EXISTS clientes (
             id TEXT PRIMARY KEY NOT NULL,
@@ -27,6 +27,16 @@ export const initDB = async (): Promise<void> => {
             cedula TEXT NOT NULL,
             direccion TEXT NOT NULL,
             numeroTelefono TEXT NOT NULL
+        );`
+    );
+
+    //  Ejecutamos el comando de creación de la tabla USUARIOS
+    await db.execAsync(
+        `CREATE TABLE IF NOT EXISTS usuarios (
+            id TEXT PRIMARY KEY NOT NULL,
+            nombre TEXT NOT NULL,
+            correo TEXT UNIQUE NOT NULL, 
+            password TEXT NOT NULL
         );`
     );
 };

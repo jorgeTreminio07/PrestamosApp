@@ -11,13 +11,27 @@ export type RootStackParamList = {
   Usuarios: undefined;
 };
 
+// 💡 1. Definimos las props que recibirá el AppNavigator desde App.tsx
+interface AppNavigatorProps {
+  onLogout: () => void;
+}
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function AppNavigator() {
+// 💡 2. Aceptamos la prop onLogout
+export default function AppNavigator({ onLogout }: AppNavigatorProps) {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} />
+        {/* 💡 3. Usamos la prop 'children' (o render) para pasar onLogout a HomeScreen */}
+        <Stack.Screen name="Home" options={{ title: "Menú Principal" }}>
+          {/* La función recibe las props de navegación estándar (navigation, route)
+            y las fusionamos con la prop onLogout antes de pasarlas a HomeScreen.
+          */}
+          {(props) => <HomeScreen {...props} onLogout={onLogout} />}
+        </Stack.Screen>
+
+        {/* Las otras pantallas no necesitan onLogout, usamos component normal */}
         <Stack.Screen name="Clientes" component={ClientesScreen} />
         <Stack.Screen name="Usuarios" component={UsuariosScreen} />
       </Stack.Navigator>

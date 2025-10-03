@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+// Importamos el componente de navegación principal
 import AppNavigator from "./src/App/navigation/AppNavigator";
 import { initDB } from "./src/data/database/database";
+// Importamos el componente de Login
+import LoginScreen from "./src/presentation/screens/LoginScreen";
 
-enum DB_STATUS {
-  LOADING = "loading",
-  CONNECTED = "connected",
-  FAILED = "failed",
+enum APP_STATUS {
+  LOADING = "loading", // Inicializando DB
+  READY = "ready", // DB conectada, listo para login
+  FAILED = "failed", // Error de DB
 }
 
 export default function App() {
-  const [dbStatus, setDbStatus] = useState<DB_STATUS>(DB_STATUS.LOADING);
+  const [appStatus, setAppStatus] = useState<APP_STATUS>(APP_STATUS.LOADING);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); // Estado de autenticación
   const [showSuccessMessage, setShowSuccessMessage] = useState<boolean>(false);
 
   useEffect(() => {
@@ -19,10 +23,8 @@ export default function App() {
         console.log("Iniciando configuración de la base de datos...");
         await initDB();
         console.log("Base de datos lista.");
-        setDbStatus(DB_STATUS.CONNECTED);
+        setAppStatus(APP_STATUS.READY);
         setShowSuccessMessage(true);
-
-        // Ocultar el mensaje después de 2 segundos
         setTimeout(() => {
           setShowSuccessMessage(false);
         }, 2000);
@@ -32,14 +34,26 @@ export default function App() {
           "Error FATAL al inicializar la base de datos:",
           error.message
         );
-        setDbStatus(DB_STATUS.FAILED);
+        setAppStatus(APP_STATUS.FAILED);
       }
     };
 
     setupDatabase();
   }, []);
 
-  if (dbStatus === DB_STATUS.LOADING) {
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    console.log("Sesión cerrada. Mostrando pantalla de Login.");
+  };
+
+  // --- Renderizado Condicional ---
+
+  // 1. Cargando DB
+  if (appStatus === APP_STATUS.LOADING) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
@@ -48,12 +62,11 @@ export default function App() {
     );
   }
 
-  if (dbStatus === DB_STATUS.FAILED) {
+  // 2. Error en DB
+  if (appStatus === APP_STATUS.FAILED) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorTitle}>
-          ⚠️ ¡NO SE CONECTÓ LA BASE DE DATOS!
-        </Text>
+        <Text style={styles.errorTitle}>¡NO SE CONECTÓ LA BASE DE DATOS!</Text>
         <Text style={styles.errorText}>
           Revisa la consola para más detalles del error.
         </Text>
@@ -61,20 +74,28 @@ export default function App() {
     );
   }
 
-  if (dbStatus === DB_STATUS.CONNECTED) {
+  // 3. DB Conectada (READY): Decide qué mostrar
+  if (appStatus === APP_STATUS.READY) {
+    // RENDERIZA LOGIN si NO está autenticado
+    if (!isAuthenticated) {
+      return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+    }
+
+    // RENDERIZA APP NAVIGATOR si SÍ está autenticado
     return (
       <View style={{ flex: 1 }}>
-        <AppNavigator />
+        {/* Pasamos la función de logout al AppNavigator */}
+        <AppNavigator onLogout={handleLogout} />
         {showSuccessMessage && (
           <View style={styles.successMessage}>
-            <Text style={styles.successText}>✅ Base de datos conectada</Text>
+            <Text style={styles.successText}>Base de datos conectada</Text>
           </View>
         )}
       </View>
     );
   }
 
-  return <AppNavigator />;
+  return <AppNavigator onLogout={handleLogout} />;
 }
 
 const styles = StyleSheet.create({
