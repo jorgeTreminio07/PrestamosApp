@@ -6,11 +6,15 @@ import {
   TouchableOpacity,
   Modal,
   TouchableWithoutFeedback,
-  Alert, // 💡 IMPORTADO: Añadimos Alert para poder personalizar el título
+  Alert,
 } from "react-native";
 import Cliente from "../../../domain/models/Cliente";
-// Usamos Feather de react-native-vector-icons (o Expo)
 import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../App/navigation/AppNavigator";
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Clientes">;
 
 interface Props {
   cliente: Cliente;
@@ -19,55 +23,54 @@ interface Props {
 }
 
 export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
-  // 💡 Estado para controlar la visibilidad del menú de opciones
   const [menuVisible, setMenuVisible] = useState(false);
+  const navigation = useNavigation<NavigationProp>();
 
-  // 💡 Función para ver los detalles (corregida para usar Alert.alert)
   const handleView = () => {
     setMenuVisible(false);
-
     const detailsText =
       `Nombre: ${cliente.nombre}\n` +
       `Cédula: ${cliente.cedula}\n` +
       `Dirección: ${cliente.direccion}\n` +
       `Teléfono: ${cliente.numeroTelefono}`;
-
-    // 💡 CAMBIO CLAVE: Usamos Alert.alert(Título, Mensaje, Botones)
-    Alert.alert(
-      `Detalles Cliente`, // El encabezado personalizado
-      detailsText,
-      [{ text: "Cerrar" }] // Botón para cerrar la alerta
-    );
+    Alert.alert("Detalles Cliente", detailsText, [{ text: "Cerrar" }]);
   };
 
-  // 💡 Función para editar
   const handleEdit = () => {
-    setMenuVisible(false); // Cerrar menú antes de abrir el modal de edición
+    setMenuVisible(false);
     onEdit(cliente);
   };
 
-  // 💡 Función para eliminar
   const handleDelete = () => {
-    setMenuVisible(false); // Cerrar menú
-    onDelete(cliente.id); // Llamar a la función principal de eliminación (con confirmación en el padre)
+    setMenuVisible(false);
+    onDelete(cliente.id);
   };
 
-  // --- Componente del Menú de Opciones ---
+  const handleVerPrestamos = () => {
+    setMenuVisible(false);
+    navigation.navigate("PrestamosPorCliente", {
+      clienteId: cliente.id,
+      clienteNombre: cliente.nombre,
+    });
+  };
+
   const OptionsMenu = () => (
-    <Modal
-      animationType="fade" // O 'slide' para un efecto diferente
-      transparent={true}
-      visible={menuVisible}
-      onRequestClose={() => setMenuVisible(false)}
-    >
+    <Modal animationType="fade" transparent visible={menuVisible}>
       <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
-        {/* Contenedor principal que oscurece el fondo */}
         <View style={styles.modalOverlay}>
-          {/* El cuadro de opciones (centrado o en la parte inferior) */}
           <View style={styles.menuBox}>
             <TouchableOpacity style={styles.menuOption} onPress={handleView}>
               <Text style={[styles.menuText, { color: "#2196F3" }]}>
-                Ver Detalles
+                Ver Detalles de usuario
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.separator} />
+            <TouchableOpacity
+              style={styles.menuOption}
+              onPress={handleVerPrestamos}
+            >
+              <Text style={[styles.menuText, { color: "#FF9800" }]}>
+                Ver Préstamos
               </Text>
             </TouchableOpacity>
             <View style={styles.separator} />
@@ -82,8 +85,6 @@ export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
                 Eliminar
               </Text>
             </TouchableOpacity>
-
-            {/* Botón de Cancelar opcional */}
             <TouchableOpacity
               style={[styles.menuOption, styles.cancelButton]}
               onPress={() => setMenuVisible(false)}
@@ -99,17 +100,12 @@ export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>{cliente.nombre}</Text>
-
-      {/* 💡 Nuevo botón de 3 puntos */}
       <TouchableOpacity
         onPress={() => setMenuVisible(true)}
         style={styles.optionsButton}
       >
-        {/* 💡 Usamos el ícono 'more-vertical' de Feather */}
         <Feather name="more-vertical" size={24} color="#333" />
       </TouchableOpacity>
-
-      {/* 💡 Renderizamos el menú de opciones */}
       <OptionsMenu />
     </View>
   );
@@ -120,7 +116,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12, // Aumento de padding para mejor tacto
+    paddingVertical: 12,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderColor: "#eee",
@@ -129,17 +125,16 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     fontWeight: "500",
-    flex: 1, // Permite que el nombre ocupe el espacio
+    flex: 1,
   },
   optionsButton: {
     padding: 5,
     marginLeft: 10,
   },
-  // --- Estilos del Modal del Menú ---
   modalOverlay: {
     flex: 1,
-    justifyContent: "flex-end", // Coloca el menú en la parte inferior
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fondo semitransparente
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   menuBox: {
     backgroundColor: "white",

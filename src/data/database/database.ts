@@ -29,6 +29,7 @@ export const initDB = async (): Promise<void> => {
             numeroTelefono TEXT NOT NULL
         );`
     );
+    
 
     //  Ejecutamos el comando de creación de la tabla USUARIOS
     await db.execAsync(
@@ -38,6 +39,28 @@ export const initDB = async (): Promise<void> => {
             correo TEXT UNIQUE NOT NULL, 
             password TEXT NOT NULL
         );`
+    );
+
+    // 💡 Ejecutamos el comando de creación de la tabla PRÉSTAMOS
+    await db.execAsync(
+        `
+        CREATE TABLE IF NOT EXISTS prestamos (
+            id TEXT PRIMARY KEY NOT NULL,
+            clienteId TEXT NOT NULL,
+            clienteNombre TEXT NOT NULL,
+            cantidad REAL NOT NULL,
+            interes REAL NOT NULL,
+            datePrestamo TEXT NOT NULL,
+            periodo INTEGER NOT NULL,
+            tiempo TEXT NOT NULL,
+            totalPagar REAL NOT NULL,
+            deudaStatus INTEGER NOT NULL, -- 0 (false) o 1 (true)
+            fechaVencimiento TEXT NOT NULL,
+            montoPagado REAL NOT NULL,
+            demoraDias INTEGER NOT NULL,
+            FOREIGN KEY (clienteId) REFERENCES clientes(id)
+        );
+        `
     );
 };
 
