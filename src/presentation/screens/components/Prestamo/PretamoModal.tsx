@@ -196,7 +196,7 @@ export default function PrestamoModal({
               }
             >
               <Picker.Item label="Días" value="Días" />
-              <Picker.Item label="Semanas" value="Semanas" />
+              {/* <Picker.Item label="Semanas" value="Semanas" /> */}
               <Picker.Item label="Meses" value="Meses" />
             </Picker>
           </View>

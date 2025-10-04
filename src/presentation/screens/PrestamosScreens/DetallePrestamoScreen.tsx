@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../App/navigation/AppNavigator";
-import PrestamoRepository from "../../data/repositories/PrestamoRepository";
-import Prestamo from "../../domain/models/Prestamo";
+import { RootStackParamList } from "../../../App/navigation/AppNavigator";
+import PrestamoRepository from "../../../data/repositories/PrestamoRepository";
+import Prestamo from "../../../domain/models/Prestamo";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DetallePrestamo">;
 

@@ -8,11 +8,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../App/navigation/AppNavigator";
-import PrestamoRepository from "../../data/repositories/PrestamoRepository";
-import Prestamo from "../../domain/models/Prestamo";
+import { RootStackParamList } from "../../../App/navigation/AppNavigator";
+import PrestamoRepository from "../../../data/repositories/PrestamoRepository";
+import Prestamo from "../../../domain/models/Prestamo";
 import { Feather } from "@expo/vector-icons";
-import PrestamoModal from "./components/Prestamo/PretamoModal";
+import PrestamoModal from "../components/Prestamo/PretamoModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PrestamosPorCliente">;
 

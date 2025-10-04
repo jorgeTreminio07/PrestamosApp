@@ -11,10 +11,10 @@ import {
   Text,
 } from "react-native";
 // 💡 IMPORTACIONES ACTUALIZADAS
-import UsuarioRepository from "../../data/repositories/UsuarioRepository";
-import Usuario from "../../domain/models/Usuario";
-import UserItem from "./components/Users/UserItem"; // Asumiendo esta ruta
-import UserModal from "./components/Users/UserModal"; // Asumiendo esta ruta
+import UsuarioRepository from "../../../data/repositories/UsuarioRepository";
+import Usuario from "../../../domain/models/Usuario";
+import UserItem from "../components/Users/UserItem"; // Asumiendo esta ruta
+import UserModal from "../components/Users/UserModal"; // Asumiendo esta ruta
 
 // 💡 Componente de Encabezados (sin cambios en estilo)
 const ListHeader = () => (

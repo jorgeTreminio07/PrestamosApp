@@ -19,7 +19,7 @@ export default class PrestamoRepository {
 
         // 1. Cálculo del Total Inicial (Principal + Intereses Simples)
         const interesMonto = cantidad * (interes / 100);
-        const totalDeudaInicial = cantidad + interesMonto;
+        const totalDeudaInicial = cantidad + (periodo * interesMonto);
 
         // 2. Cálculo de la Fecha de Vencimiento
         const date = new Date(datePrestamo);
