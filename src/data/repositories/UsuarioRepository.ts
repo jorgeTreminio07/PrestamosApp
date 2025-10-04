@@ -29,7 +29,7 @@ export default class UsuarioRepository {
     // 💡 Obtener la instancia de la base de datos de forma asíncrona
     const db = await getDB(); 
     // Usamos .getAllAsync
-    const usuarios = await db.getAllAsync<Usuario>('SELECT * FROM usuarios');
+    const usuarios = await db.getAllAsync<Usuario>('SELECT * FROM usuarios ORDER BY nombre COLLATE NOCASE ASC');
     return usuarios;
   }
   

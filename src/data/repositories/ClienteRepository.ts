@@ -16,7 +16,7 @@ export default class ClienteRepository {
     // 💡 Obtener la instancia de la base de datos de forma asíncrona
     const db = await getDB(); 
     // Usamos .getAllAsync
-    const clientes = await db.getAllAsync<Cliente>('SELECT * FROM clientes');
+    const clientes = await db.getAllAsync<Cliente>('SELECT * FROM clientes ORDER BY nombre COLLATE NOCASE ASC');
     return clientes;
   }
 
