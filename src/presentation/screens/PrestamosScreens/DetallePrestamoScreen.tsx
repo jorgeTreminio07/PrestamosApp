@@ -29,6 +29,10 @@ export default function DetallePrestamoScreen({ route }: Props) {
     return `${day}/${month}/${year.slice(2)}`;
   }
 
+  function cuota(periodo: number, totalPagar: number) {
+    return totalPagar / periodo;
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Detalle del Préstamo</Text>
@@ -53,6 +57,10 @@ export default function DetallePrestamoScreen({ route }: Props) {
       </Text>
       <Text style={styles.item}>
         Estado: {prestamo.deudaStatus ? "Pendiente" : "Pagado"}
+      </Text>
+      <Text style={styles.item}>
+        Cuota por {prestamo.tiempo}: {prestamo.moneda}
+        {cuota(prestamo.periodo, prestamo.totalPagar).toFixed(2)}
       </Text>
       {prestamo.demoraDias > 0 && (
         <Text style={styles.item}>Demora: {prestamo.demoraDias} días</Text>

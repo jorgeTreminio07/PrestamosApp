@@ -16,10 +16,17 @@ export default class PrestamoRepository {
      */
     private static _calculateFinancials(prestamo: { cantidad: number, interes: number, periodo: number, tiempo: Tiempo, datePrestamo: string }): { totalDeudaInicial: number, fechaVencimiento: string } {
         const { cantidad, interes, periodo, tiempo, datePrestamo } = prestamo;
+        var totalDeudaInicial = 0;
 
-        // 1. Cálculo del Total Inicial (Principal + Intereses Simples)
-        const interesMonto = cantidad * (interes / 100);
-        const totalDeudaInicial = cantidad + (periodo * interesMonto);
+        if(tiempo === "Meses") {
+            // 1. Cálculo del Total Inicial (Principal + Intereses Simples)
+            const interesMonto = cantidad * (interes / 100);
+            totalDeudaInicial = cantidad + (periodo * interesMonto);
+        }else if (tiempo === "Días") {
+            const interesMonto = cantidad * (interes / 100);
+            totalDeudaInicial = cantidad + interesMonto;
+        }
+        
 
         // 2. Cálculo de la Fecha de Vencimiento
         const date = new Date(datePrestamo);
