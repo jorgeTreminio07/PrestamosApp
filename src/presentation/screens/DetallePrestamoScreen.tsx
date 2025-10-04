@@ -23,6 +23,12 @@ export default function DetallePrestamoScreen({ route }: Props) {
     );
   }
 
+  function formatDateToDDMMYY(dateStr?: string) {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year.slice(2)}`;
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Detalle del Préstamo</Text>
@@ -37,10 +43,10 @@ export default function DetallePrestamoScreen({ route }: Props) {
         {prestamo.totalPagar.toFixed(2)}
       </Text>
       <Text style={styles.item}>
-        Fecha de Préstamo: {prestamo.datePrestamo}
+        Fecha de Préstamo: {formatDateToDDMMYY(prestamo.datePrestamo)}
       </Text>
       <Text style={styles.item}>
-        Fecha de Vencimiento: {prestamo.fechaVencimiento}
+        Fecha de Vencimiento: {formatDateToDDMMYY(prestamo.fechaVencimiento)}
       </Text>
       <Text style={styles.item}>
         Periodo: {prestamo.periodo} {prestamo.tiempo}

@@ -61,6 +61,12 @@ export default function PrestamosPorClienteScreen({
     setPrestamoToEdit(null);
   };
 
+  function formatDateToDDMMYY(dateStr?: string) {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year.slice(2)}`; // ejemplo: 04/10/25
+  }
+
   const renderItem = ({ item }: { item: Prestamo }) => (
     <View style={styles.card}>
       <View style={styles.row}>
@@ -81,6 +87,14 @@ export default function PrestamosPorClienteScreen({
           {item.deudaStatus ? "Pendiente" : "Pagado"}
         </Text>
       </View>
+
+      <View style={styles.row}>
+        <Text style={styles.label}>Fecha de prestamo:</Text>
+        <Text style={styles.value}>
+          {formatDateToDDMMYY(item.datePrestamo)}
+        </Text>
+      </View>
+
       <View style={styles.actions}>
         <TouchableOpacity
           onPress={() =>
