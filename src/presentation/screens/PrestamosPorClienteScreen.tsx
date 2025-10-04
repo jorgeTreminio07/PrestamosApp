@@ -65,7 +65,10 @@ export default function PrestamosPorClienteScreen({
     <View style={styles.card}>
       <View style={styles.row}>
         <Text style={styles.label}>Total a Pagar:</Text>
-        <Text style={styles.value}>${item.totalPagar.toFixed(2)}</Text>
+        <Text style={styles.value}>
+          {item.moneda}
+          {item.totalPagar.toFixed(2)}
+        </Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.label}>Estado:</Text>

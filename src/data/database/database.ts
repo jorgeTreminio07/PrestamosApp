@@ -52,6 +52,7 @@ export const initDB = async (): Promise<void> => {
             interes REAL NOT NULL,
             datePrestamo TEXT NOT NULL,
             periodo INTEGER NOT NULL,
+            moneda TEXT NOT NULL,
             tiempo TEXT NOT NULL,
             totalPagar REAL NOT NULL,
             deudaStatus INTEGER NOT NULL, -- 0 (false) o 1 (true)
@@ -62,6 +63,7 @@ export const initDB = async (): Promise<void> => {
         );
         `
     );
+
 };
 
 // Función para obtener la instancia de la DB ya conectada

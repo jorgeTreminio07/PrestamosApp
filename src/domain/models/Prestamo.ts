@@ -7,6 +7,7 @@
  * (totalPagar, estado de deuda, y fecha de vencimiento).
  */
 export type Tiempo = "Días" | "Semanas" | "Meses";
+export type Moneda = "$" | "C$";
 
 export default interface Prestamo {
   id: string;
@@ -15,6 +16,7 @@ export default interface Prestamo {
   
   // Datos de entrada del formulario
   cantidad: number; // Cantidad prestada (principal)
+  moneda: Moneda;
   interes: number; // Tasa de interés (%)
   datePrestamo: string; // Fecha en que se otorgó el préstamo (YYYY-MM-DD)
   periodo: number; // Duración del plazo (ej: 3, 5, 12)

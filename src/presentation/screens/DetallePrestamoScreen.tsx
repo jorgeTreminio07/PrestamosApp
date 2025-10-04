@@ -27,10 +27,14 @@ export default function DetallePrestamoScreen({ route }: Props) {
     <View style={styles.container}>
       <Text style={styles.title}>Detalle del Préstamo</Text>
       <Text style={styles.item}>Cliente: {prestamo.clienteNombre}</Text>
-      <Text style={styles.item}>Cantidad: ${prestamo.cantidad.toFixed(2)}</Text>
+      <Text style={styles.item}>
+        Cantidad: {prestamo.moneda}
+        {prestamo.cantidad.toFixed(2)}
+      </Text>
       <Text style={styles.item}>Interés: {prestamo.interes}%</Text>
       <Text style={styles.item}>
-        Total a Pagar: ${prestamo.totalPagar.toFixed(2)}
+        Total a Pagar: {prestamo.moneda}
+        {prestamo.totalPagar.toFixed(2)}
       </Text>
       <Text style={styles.item}>
         Fecha de Préstamo: {prestamo.datePrestamo}

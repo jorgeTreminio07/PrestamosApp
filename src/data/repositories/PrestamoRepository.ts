@@ -45,6 +45,7 @@ export default class PrestamoRepository {
         const db = await getDB();
         // Usamos .getAllAsync para obtener una lista tipada.
         const prestamos = await db.getAllAsync<Prestamo>('SELECT * FROM prestamos ORDER BY datePrestamo DESC');
+        console.log("Préstamos cargados:", prestamos);
         return prestamos;
     }
 
@@ -88,15 +89,16 @@ export default class PrestamoRepository {
         // Calcular valores iniciales
         const { totalDeudaInicial, fechaVencimiento } = PrestamoRepository._calculateFinancials(prestamo);
 
+        console.log("insertando en la db", prestamo);
         // El 'totalPagar' inicial es igual al 'totalDeudaInicial' (Principal + Intereses),
         // ya que el 'montoPagado' es 0 y no hay 'demoraDias'.
         await db.runAsync(
             `INSERT INTO prestamos (
-                id, clienteId, clienteNombre, cantidad, interes, datePrestamo,
+                id, clienteId, clienteNombre, cantidad, moneda, interes, datePrestamo,
                 periodo, tiempo, totalPagar, deudaStatus, fechaVencimiento, montoPagado, demoraDias
-             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-              id, prestamo.clienteId, prestamo.clienteNombre, prestamo.cantidad,
+              id, prestamo.clienteId, prestamo.clienteNombre, prestamo.cantidad, prestamo.moneda,
               prestamo.interes, prestamo.datePrestamo, prestamo.periodo, prestamo.tiempo,
               totalDeudaInicial, 1, // deudaStatus = 1 (TRUE)
               fechaVencimiento, 0, // montoPagado = 0
@@ -122,11 +124,11 @@ export default class PrestamoRepository {
 
         await db.runAsync(
             `UPDATE prestamos SET 
-                clienteId=?, clienteNombre=?, cantidad=?, interes=?, datePrestamo=?,
+                clienteId=?, clienteNombre=?, cantidad=?, moneda=?, interes=?, datePrestamo=?,
                 periodo=?, tiempo=?, totalPagar=?, fechaVencimiento=?, deudaStatus=?
              WHERE id=?`,
             [
-              prestamo.clienteId, prestamo.clienteNombre, prestamo.cantidad,
+              prestamo.clienteId, prestamo.clienteNombre, prestamo.cantidad, prestamo.moneda,
               prestamo.interes, prestamo.datePrestamo, prestamo.periodo, prestamo.tiempo,
               nuevoTotalPendiente, fechaVencimiento, nuevaDeudaStatus,
               prestamo.id

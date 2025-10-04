@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TextInput, StyleSheet, Button } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Cliente from "../../../../domain/models/Cliente";
-import Prestamo, { Tiempo } from "../../../../domain/models/Prestamo";
+import Prestamo, { Moneda, Tiempo } from "../../../../domain/models/Prestamo";
+import { AutocompleteDropdown } from "react-native-autocomplete-dropdown";
 
 interface Props {
   visible: boolean;
@@ -21,6 +22,7 @@ export default function PrestamoModal({
 }: Props) {
   const [clienteId, setClienteId] = useState("");
   const [cantidad, setCantidad] = useState("");
+  const [moneda, setMoneda] = useState<Moneda>("$");
   const [interes, setInteres] = useState("");
   const [periodo, setPeriodo] = useState("");
   const [tiempo, setTiempo] = useState<Tiempo>("Días");
@@ -37,12 +39,14 @@ export default function PrestamoModal({
       if (prestamoToEdit) {
         setClienteId(prestamoToEdit.clienteId);
         setCantidad(prestamoToEdit.cantidad.toString());
+        setMoneda(prestamoToEdit.moneda);
         setInteres(prestamoToEdit.interes.toString());
         setPeriodo(prestamoToEdit.periodo.toString());
         setTiempo(prestamoToEdit.tiempo);
       } else {
         setClienteId("");
         setCantidad("");
+        setMoneda("$");
         setInteres("");
         setPeriodo("");
         setTiempo("Días");
@@ -80,6 +84,7 @@ export default function PrestamoModal({
       clienteId: cliente.id,
       clienteNombre: cliente.nombre,
       cantidad: parseFloat(cantidad),
+      moneda,
       interes: parseFloat(interes),
       datePrestamo: prestamoToEdit?.datePrestamo ?? fechaActual,
       periodo: parseInt(periodo),
@@ -91,6 +96,7 @@ export default function PrestamoModal({
       demoraDias: prestamoToEdit?.demoraDias ?? 0,
     };
 
+    // console.log("click guaurdar", prestamo);
     onSave(prestamo);
     onClose();
   };
@@ -141,6 +147,20 @@ export default function PrestamoModal({
           {errores.cantidad && (
             <Text style={styles.errorText}>Ingrese una cantidad válida</Text>
           )}
+
+          {/* Moneda */}
+          <Text style={styles.label}>Moneda</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={moneda}
+              onValueChange={(itemValue: Moneda) =>
+                setMoneda(itemValue as Moneda)
+              }
+            >
+              <Picker.Item label="$ Dolar" value="$" />
+              <Picker.Item label="C$ Cordoba" value="C$" />
+            </Picker>
+          </View>
 
           {/* Interés */}
           <Text style={styles.label}>Interés (%)</Text>

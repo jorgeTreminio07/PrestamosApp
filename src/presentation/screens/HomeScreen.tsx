@@ -33,9 +33,15 @@ export default function HomeScreen({ navigation, onLogout }: Props) {
   }, []);
 
   const handleGuardarPrestamo = async (prestamo: Prestamo) => {
+    console.log("Recibido en HomeScreen:", prestamo);
     await PrestamoRepository.create(prestamo);
     setMensajeExito(true);
     setTimeout(() => setMensajeExito(false), 2000);
+  };
+
+  const cargarClientes = async () => {
+    const lista = await ClienteRepository.getAll();
+    setClientes(lista);
   };
 
   return (
@@ -53,7 +59,10 @@ export default function HomeScreen({ navigation, onLogout }: Props) {
       <MenuCard
         title="Nuevo Préstamo"
         iconName="attach-money"
-        onPress={() => setModalVisible(true)}
+        onPress={() => {
+          cargarClientes(); // ✅ recarga la lista
+          setModalVisible(true);
+        }}
       />
 
       <PrestamoModal
