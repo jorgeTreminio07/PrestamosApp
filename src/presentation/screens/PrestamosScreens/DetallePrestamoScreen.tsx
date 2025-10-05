@@ -29,9 +29,30 @@ export default function DetallePrestamoScreen({ route }: Props) {
     return `${day}/${month}/${year.slice(2)}`;
   }
 
-  function cuota(periodo: number, totalPagar: number) {
-    return totalPagar / periodo;
+  // function cuota(periodo: number, totalPagar: number, tiempo: string, dateprestamo: string, fechavencimiento: string) {
+  //   return totalPagar / periodo;
+  // }
+
+  function cuota(periodo: number, totalPagar: number, tiempo: string) {
+    let cuotaPorDia = 0;
+
+    if (tiempo.toLowerCase() === "meses") {
+      // Si es por meses: total dividido entre meses, luego entre 26 días
+      const cuotaMensual = totalPagar / periodo;
+      cuotaPorDia = cuotaMensual / 26;
+    } else if (tiempo.toLowerCase() === "días") {
+      // Si es por días: total dividido entre periodo
+      cuotaPorDia = totalPagar / periodo;
+    }
+
+    return cuotaPorDia;
   }
+
+  const cuotaPorDia = cuota(
+    prestamo.periodo,
+    prestamo.totalPagar,
+    prestamo.tiempo
+  );
 
   return (
     <View style={styles.container}>
@@ -59,8 +80,8 @@ export default function DetallePrestamoScreen({ route }: Props) {
         Estado: {prestamo.deudaStatus ? "Pendiente" : "Pagado"}
       </Text>
       <Text style={styles.item}>
-        Cuota por {prestamo.tiempo}: {prestamo.moneda}
-        {cuota(prestamo.periodo, prestamo.totalPagar).toFixed(2)}
+        Cuota por día: {prestamo.moneda}
+        {cuotaPorDia.toFixed(2)}
       </Text>
       {prestamo.demoraDias > 0 && (
         <Text style={styles.item}>Demora: {prestamo.demoraDias} días</Text>

@@ -23,16 +23,33 @@ export default class PrestamoRepository {
             const interesMonto = cantidad * (interes / 100);
             totalDeudaInicial = cantidad + (periodo * interesMonto);
         }else if (tiempo === "Días") {
-            const interesMonto = cantidad * (interes / 100);
-            totalDeudaInicial = cantidad + interesMonto;
+            if(periodo < 26) {
+                const interesMonto = cantidad * (interes / 100);
+                totalDeudaInicial = cantidad + interesMonto;
+            }else {
+                console.log("El periodo debe ser menor a 26");
+            }
         }
         
-
         // 2. Cálculo de la Fecha de Vencimiento
         const date = new Date(datePrestamo);
-        if (tiempo === "Días") {
-            date.setDate(date.getDate() + periodo);
-        } else if (tiempo === "Semanas") {
+        let diasContados = 0;
+    // empezar desde el día siguiente
+    date.setDate(date.getDate() + 1);
+
+    while (diasContados < periodo) {
+        if (date.getDay() !== 0) { // si no es domingo
+            diasContados++;
+        }
+        if (diasContados < periodo) {
+            date.setDate(date.getDate() + 1);
+        }
+    }
+
+    // si la fecha final cae domingo, mover al lunes
+    if (date.getDay() === 0) {
+        date.setDate(date.getDate() + 1);
+    } else if (tiempo === "Semanas") {
             date.setDate(date.getDate() + periodo * 7);
         } else if (tiempo === "Meses") {
             date.setMonth(date.getMonth() + periodo);
@@ -40,6 +57,7 @@ export default class PrestamoRepository {
         // Formato YYYY-MM-DD
         const fechaVencimiento = date.toISOString().split('T')[0];
 
+        console.log("fecha de vencimiento:", fechaVencimiento);
         return { totalDeudaInicial: parseFloat(totalDeudaInicial.toFixed(2)), fechaVencimiento };
     }
 
@@ -96,7 +114,7 @@ export default class PrestamoRepository {
         // Calcular valores iniciales
         const { totalDeudaInicial, fechaVencimiento } = PrestamoRepository._calculateFinancials(prestamo);
 
-        console.log("insertando en la db", prestamo);
+        
         // El 'totalPagar' inicial es igual al 'totalDeudaInicial' (Principal + Intereses),
         // ya que el 'montoPagado' es 0 y no hay 'demoraDias'.
         await db.runAsync(
@@ -111,6 +129,7 @@ export default class PrestamoRepository {
               fechaVencimiento, 0, // montoPagado = 0
               0 // demoraDias = 0
             ]
+            
         );
     }
 

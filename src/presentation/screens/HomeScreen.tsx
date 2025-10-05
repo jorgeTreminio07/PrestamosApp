@@ -33,7 +33,6 @@ export default function HomeScreen({ navigation, onLogout }: Props) {
   }, []);
 
   const handleGuardarPrestamo = async (prestamo: Prestamo) => {
-    console.log("Recibido en HomeScreen:", prestamo);
     await PrestamoRepository.create(prestamo);
     setMensajeExito(true);
     setTimeout(() => setMensajeExito(false), 2000);
