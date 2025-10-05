@@ -33,23 +33,26 @@ export default class PrestamoRepository {
         
         // 2. Cálculo de la Fecha de Vencimiento
         const date = new Date(datePrestamo);
-        let diasContados = 0;
-    // empezar desde el día siguiente
-    date.setDate(date.getDate() + 1);
-
-    while (diasContados < periodo) {
-        if (date.getDay() !== 0) { // si no es domingo
-            diasContados++;
-        }
-        if (diasContados < periodo) {
+        if (tiempo === "Días") {
+            let diasContados = 0;
+            // empezar desde el día siguiente
             date.setDate(date.getDate() + 1);
-        }
-    }
 
-    // si la fecha final cae domingo, mover al lunes
-    if (date.getDay() === 0) {
-        date.setDate(date.getDate() + 1);
-    } else if (tiempo === "Semanas") {
+            while (diasContados < periodo) {
+                if (date.getDay() !== 0) { // si no es domingo
+                    diasContados++;
+                }
+                if (diasContados < periodo) {
+                    date.setDate(date.getDate() + 1);
+                }
+            }
+
+            // si la fecha final cae domingo, mover al lunes
+            if (date.getDay() === 0) {
+                date.setDate(date.getDate() + 1);
+            }
+        }
+        else if (tiempo === "Semanas") {
             date.setDate(date.getDate() + periodo * 7);
         } else if (tiempo === "Meses") {
             date.setMonth(date.getMonth() + periodo);
