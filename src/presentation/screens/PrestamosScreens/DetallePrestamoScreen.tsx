@@ -19,6 +19,7 @@ import { RootStackParamList } from "../../../App/navigation/AppNavigator";
 import PrestamoRepository from "../../../data/repositories/PrestamoRepository";
 import Prestamo from "../../../domain/models/Prestamo";
 import { MaterialIcons } from "@expo/vector-icons"; // Usamos iconos de Expo
+import { useFocusEffect } from "@react-navigation/native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DetallePrestamo">;
 
@@ -120,14 +121,27 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
 
   // Función para cargar los datos del préstamo
   const loadPrestamo = useCallback(async () => {
+    // 💡 LOG DE DEBUG para confirmar la recarga
+    console.log(
+      `[DEBUG] Recargando datos de préstamo al enfocar: ${prestamoId}`
+    );
+
     const data = await PrestamoRepository.getById(prestamoId);
     setPrestamo(data);
     setRefreshing(false);
   }, [prestamoId]);
 
-  useEffect(() => {
-    loadPrestamo();
-  }, [loadPrestamo]);
+  // 💡 USAMOS useFocusEffect: Se ejecuta cada vez que la pantalla está enfocada.
+  useFocusEffect(
+    useCallback(() => {
+      // Al enfocarse, iniciamos la recarga del préstamo
+      loadPrestamo();
+      // Retornar una función de limpieza es opcional aquí, pero buena práctica
+      return () => {
+        // Lógica de limpieza si es necesaria al desenfocar
+      };
+    }, [loadPrestamo])
+  );
 
   // Función para abrir el modal de nuevo abono
   const handleOpenNewAbonoModal = () => {

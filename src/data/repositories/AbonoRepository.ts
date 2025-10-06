@@ -1,6 +1,7 @@
 import { getDB } from '../database/database';
 import Abono from '../../domain/models/Abono';
 import uuid from 'react-native-uuid';
+import PrestamoRepository from './PrestamoRepository';
 
 export default class AbonoRepository {
 
@@ -8,6 +9,13 @@ export default class AbonoRepository {
      * Registra un nuevo abono para un préstamo específico.
      * @param abono Objeto Abono con prestamoId, cantidadAbono y dateAbono.
      */
+    
+    static async getById(id: string): Promise<Abono | null> {
+        const db = await getDB();
+        const abono = await db.getFirstAsync<Abono>('SELECT * FROM abonos WHERE id = ?', [id]);
+        return abono ?? null;
+    }
+    
     static async create(abono: Omit<Abono, 'id'>): Promise<void> {
         const db = await getDB();
         const id = uuid.v4().toString();
@@ -49,35 +57,75 @@ export default class AbonoRepository {
      * Solo permite actualizar la cantidad abonada y la fecha del abono.
      * @param abono Objeto Abono con los datos actualizados.
      */
+    /**
+     * Actualiza un abono existente y ajusta el balance del préstamo asociado.
+     * @param abono Objeto Abono con los datos actualizados (id, cantidadAbono, dateAbono).
+     */
     static async update(abono: Abono): Promise<void> {
         const db = await getDB();
         
-        console.log(`Actualizando abono ID ${abono.id} con nueva cantidad: ${abono.cantidadAbono}`);
+        // 1. OBTENER el monto original antes de la actualización
+        const originalAbono = await AbonoRepository.getById(abono.id);
 
+        if (!originalAbono) {
+            throw new Error(`Abono con ID ${abono.id} no encontrado para actualizar.`);
+        }
+        
+        const oldAmount = originalAbono.cantidadAbono;
+        const newAmount = abono.cantidadAbono;
+        
+        // Calcular la diferencia: si es positiva, se suma al montoPagado; si es negativa, se resta.
+        const amountDifference = newAmount - oldAmount;
+
+        console.log(`Actualizando abono ID ${abono.id}. Original: ${oldAmount}, Nuevo: ${newAmount}, Diferencia: ${amountDifference}`);
+
+        // 2. ACTUALIZAR el registro del abono en la tabla 'abonos'
         await db.runAsync(
             `UPDATE abonos SET cantidadAbono = ?, dateAbono = ? WHERE id = ?`,
             [
-                abono.cantidadAbono,
+                newAmount, 
                 abono.dateAbono,
                 abono.id,
             ]
         );
-        console.log("Abono actualizado exitosamente.");
+
+        // 3. AJUSTAR el balance del préstamo (solo si hubo un cambio de monto)
+        if (amountDifference !== 0) {
+            // Llamamos a la función de PrestamoRepository para centralizar la lógica financiera
+            await PrestamoRepository._updatePrestamoBalance(originalAbono.prestamoId, amountDifference);
+        }
+
+        console.log("Abono y balance del préstamo actualizados exitosamente.");
     }
 
     /**
-     * Elimina un abono por su ID.
+     * Elimina un abono por su ID y ajusta el balance del préstamo asociado (revierte el pago).
      * @param id El ID del abono a eliminar.
      */
     static async delete(id: string): Promise<void> {
         const db = await getDB();
         
-        console.log(`Eliminando abono ID ${id}`);
+        // 1. OBTENER el abono original antes de eliminar para saber cuánto restar del balance
+        const originalAbono = await AbonoRepository.getById(id);
 
+        if (!originalAbono) {
+            throw new Error(`Abono con ID ${id} no encontrado para eliminar.`);
+        }
+
+        // La diferencia es el negativo de la cantidad abonada, pues se "deshace" el pago
+        const amountDifference = -originalAbono.cantidadAbono;
+
+        console.log(`Eliminando abono ID ${id}. Cantidad a revertir: ${originalAbono.cantidadAbono}`);
+
+        // 2. ELIMINAR el registro del abono
         await db.runAsync(
             `DELETE FROM abonos WHERE id = ?`,
             [id]
         );
-        console.log("Abono eliminado exitosamente.");
+
+        // 3. AJUSTAR el balance del préstamo
+        await PrestamoRepository._updatePrestamoBalance(originalAbono.prestamoId, amountDifference);
+
+        console.log("Abono eliminado y balance del préstamo ajustados exitosamente.");
     }
 }

@@ -228,4 +228,50 @@ export default class PrestamoRepository {
         );
         console.log(`Pago de ${amount} registrado para el préstamo ${id}. Nuevo saldo pendiente: ${totalPagarFinal}`);
     }
+
+    /**
+     * AJUSTE CRUCIAL: Ajusta el balance (montoPagado y totalPagar) del préstamo
+     * después de una modificación (edición o eliminación) de un abono.
+     * @param prestamoId ID del préstamo a modificar.
+     * @param amountDifference Cantidad neta a sumar (positivo) o restar (negativo) del balance.
+     */
+    public static async _updatePrestamoBalance(prestamoId: string, amountDifference: number): Promise<void> {
+        const db = await getDB();
+        
+        // 1. Obtener el préstamo actual para sus valores (incluyendo montoPagado)
+        const prestamoActual = await PrestamoRepository.getById(prestamoId);
+        if (!prestamoActual) {
+            throw new Error("Préstamo no encontrado durante ajuste de balance.");
+        }
+
+        // 2. Calcular los nuevos valores de pago
+        // Se suma o resta la diferencia al monto ya pagado
+        const nuevoMontoPagado = prestamoActual.montoPagado + amountDifference;
+
+        // Recalcular la deuda total inicial con los parámetros actuales del préstamo
+        const { totalDeudaInicial } = PrestamoRepository._calculateFinancials(prestamoActual);
+
+        // Nuevo total pendiente = Total Inicial - Nuevo Monto Pagado
+        const nuevoTotalPendiente = parseFloat((totalDeudaInicial - nuevoMontoPagado).toFixed(2));
+        
+        // Aseguramos que el total a pagar no sea negativo
+        const totalPagarFinal = Math.max(0, nuevoTotalPendiente);
+        const nuevaDeudaStatus = totalPagarFinal > 0 ? 1 : 0; // 1: Activa, 0: Saldada
+
+        // 3. Actualizar la base de datos del préstamo
+        await db.runAsync(
+            `UPDATE prestamos SET 
+                montoPagado = ?,
+                totalPagar = ?,
+                deudaStatus = ?
+              WHERE id = ?`,
+            [
+                nuevoMontoPagado,
+                totalPagarFinal,
+                nuevaDeudaStatus,
+                prestamoId
+            ]
+        );
+        console.log(`Balance del préstamo ${prestamoId} ajustado por diferencia de ${amountDifference.toFixed(2)}. Nuevo saldo pendiente: ${totalPagarFinal.toFixed(2)}`);
+    }
 }
