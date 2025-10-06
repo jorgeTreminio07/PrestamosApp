@@ -5,10 +5,13 @@ import { getDB } from '../database/database';
 import Prestamo, { Tiempo } from '../../domain/models/Prestamo'; 
 import * as SQLite from 'expo-sqlite'; 
 import uuid from 'react-native-uuid';
+import AbonoRepository from './AbonoRepository';
 
 // NOTA: Utilizamos una clase con métodos estáticos para seguir la convención del ClienteRepository.
 
 export default class PrestamoRepository {
+
+    
 
     /**
      * Calcula el monto total inicial (Principal + Interés) y la fecha de vencimiento.
@@ -51,9 +54,6 @@ export default class PrestamoRepository {
             if (date.getDay() === 0) {
                 date.setDate(date.getDate() + 1);
             }
-        }
-        else if (tiempo === "Semanas") {
-            date.setDate(date.getDate() + periodo * 7);
         } else if (tiempo === "Meses") {
             date.setMonth(date.getMonth() + periodo);
         }
@@ -63,6 +63,7 @@ export default class PrestamoRepository {
         console.log("fecha de vencimiento:", fechaVencimiento);
         return { totalDeudaInicial: parseFloat(totalDeudaInicial.toFixed(2)), fechaVencimiento };
     }
+    
 
 
     // --- 1. OBTENER TODOS ---
@@ -116,6 +117,7 @@ export default class PrestamoRepository {
 
         // Calcular valores iniciales
         const { totalDeudaInicial, fechaVencimiento } = PrestamoRepository._calculateFinancials(prestamo);
+
 
         
         // El 'totalPagar' inicial es igual al 'totalDeudaInicial' (Principal + Intereses),
@@ -200,7 +202,17 @@ export default class PrestamoRepository {
         const totalPagarFinal = Math.max(0, nuevoTotalPendiente);
         const nuevaDeudaStatus = totalPagarFinal > 0 ? 1 : 0; // 1: Activa, 0: Saldada
 
-        // 3. Actualizar la base de datos
+        // 3. Registrar el abono
+        // Usamos la fecha actual para registrar el abono
+        const today = new Date().toISOString().split('T')[0];
+        
+        await AbonoRepository.create({
+            prestamoId: id,
+            cantidadAbono: amount,
+            dateAbono: today,
+        });
+
+        // 4. Actualizar la base de datos del préstamo
         await db.runAsync(
             `UPDATE prestamos SET 
                 montoPagado = ?,
@@ -214,5 +226,6 @@ export default class PrestamoRepository {
               id
             ]
         );
+        console.log(`Pago de ${amount} registrado para el préstamo ${id}. Nuevo saldo pendiente: ${totalPagarFinal}`);
     }
 }

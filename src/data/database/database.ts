@@ -64,6 +64,19 @@ export const initDB = async (): Promise<void> => {
         `
     );
 
+    // 💰 EJECUTAMOS EL COMANDO DE CREACIÓN DE LA TABLA ABONOS
+    await db.execAsync(
+        `
+        CREATE TABLE IF NOT EXISTS abonos (
+            id TEXT PRIMARY KEY NOT NULL,
+            prestamoId TEXT NOT NULL,         -- Clave foránea que referencia al préstamo
+            cantidadAbono REAL NOT NULL,      -- Monto del abono
+            dateAbono TEXT NOT NULL,          -- Fecha del abono
+            FOREIGN KEY (prestamoId) REFERENCES prestamos(id)
+        );
+        `
+    );
+
 };
 
 // Función para obtener la instancia de la DB ya conectada

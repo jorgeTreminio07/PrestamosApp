@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import PrestamoRepository from "../../../data/repositories/PrestamoRepository";
 import Prestamo from "../../../domain/models/Prestamo";
 import { Feather } from "@expo/vector-icons";
 import PrestamoModal from "../components/Prestamo/PretamoModal";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PrestamosPorCliente">;
 
@@ -25,9 +26,17 @@ export default function PrestamosPorClienteScreen({
   const [modalVisible, setModalVisible] = useState(false);
   const [prestamoToEdit, setPrestamoToEdit] = useState<Prestamo | null>(null);
 
-  useEffect(() => {
-    PrestamoRepository.search(clienteId).then(setPrestamos);
+  // 💡 Función para cargar los préstamos, envuelta en useCallback
+  const loadPrestamos = useCallback(async () => {
+    const data = await PrestamoRepository.search(clienteId);
+    setPrestamos(data);
   }, [clienteId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPrestamos();
+    }, [loadPrestamos])
+  );
 
   const handleDelete = async (id: string) => {
     Alert.alert(
@@ -155,9 +164,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 20,
+    color: "#333",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    paddingBottom: 10,
   },
   card: {
     borderWidth: 1,

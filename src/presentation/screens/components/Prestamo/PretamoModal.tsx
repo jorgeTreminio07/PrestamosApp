@@ -32,6 +32,7 @@ export default function PrestamoModal({
     cantidad: false,
     interes: false,
     periodo: false,
+    periodoDias: false,
   });
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function PrestamoModal({
         cantidad: false,
         interes: false,
         periodo: false,
+        periodoDias: false,
       });
     }
   }, [visible, prestamoToEdit]);
@@ -67,6 +69,7 @@ export default function PrestamoModal({
       cantidad: isNaN(parseFloat(cantidad)) || parseFloat(cantidad) <= 0,
       interes: isNaN(parseFloat(interes)) || parseFloat(interes) < 0,
       periodo: isNaN(parseInt(periodo)) || parseInt(periodo) <= 0,
+      periodoDias: tiempo === "Días" && parseInt(periodo) > 25,
     };
 
     setErrores(nuevosErrores);
@@ -184,6 +187,11 @@ export default function PrestamoModal({
           />
           {errores.periodo && (
             <Text style={styles.errorText}>Ingrese un periodo válido</Text>
+          )}
+          {errores.periodoDias && (
+            <Text style={styles.errorText}>
+              Si el tiempo es "Días", el periodo debe ser menor a 26
+            </Text>
           )}
 
           {/* Tiempo */}
