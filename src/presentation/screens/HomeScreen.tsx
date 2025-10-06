@@ -51,17 +51,17 @@ export default function HomeScreen({ navigation, onLogout }: Props) {
         onPress={() => navigation.navigate("Clientes")}
       />
       <MenuCard
-        title="Usuarios"
-        iconName="group"
-        onPress={() => navigation.navigate("Usuarios")}
-      />
-      <MenuCard
         title="Nuevo Préstamo"
         iconName="attach-money"
         onPress={() => {
           cargarClientes(); // ✅ recarga la lista
           setModalVisible(true);
         }}
+      />
+      <MenuCard
+        title="Usuarios"
+        iconName="group"
+        onPress={() => navigation.navigate("Usuarios")}
       />
 
       <PrestamoModal
