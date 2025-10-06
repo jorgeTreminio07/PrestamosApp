@@ -100,7 +100,7 @@ export default class PrestamoRepository {
         
         // Buscamos por el nombre del cliente almacenado en el registro de préstamo.
         const prestamos = await db.getAllAsync<Prestamo>(
-            'SELECT * FROM prestamos WHERE clienteNombre LIKE ? OR clienteId LIKE ? ORDER BY datePrestamo COLLATE NOCASE ASC',
+            'SELECT * FROM prestamos WHERE clienteNombre LIKE ? OR clienteId LIKE ? ORDER BY datePrestamo DESC',
             [searchParam, searchParam]
         );
         return prestamos;
