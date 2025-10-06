@@ -76,51 +76,91 @@ export default function PrestamosPorClienteScreen({
     return `${day}/${month}/${year.slice(2)}`; // ejemplo: 04/10/25
   }
 
-  const renderItem = ({ item }: { item: Prestamo }) => (
-    <View style={styles.card}>
-      <View style={styles.row}>
-        <Text style={styles.label}>Total a Pagar:</Text>
-        <Text style={styles.value}>
-          {item.moneda}
-          {item.totalPagar.toFixed(2)}
-        </Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Estado:</Text>
-        <Text
-          style={[
-            styles.estado,
-            item.deudaStatus ? styles.estadoRojo : styles.estadoVerde,
-          ]}
-        >
-          {item.deudaStatus ? "Pendiente" : "Pagado"}
-        </Text>
-      </View>
+  function calcularTotalAPagar(
+    cantidad: number,
+    interes: number,
+    periodo: number,
+    tiempo: string
+  ): number {
+    let totalDeudaInicial = 0;
 
-      <View style={styles.row}>
-        <Text style={styles.label}>Fecha de prestamo:</Text>
-        <Text style={styles.value}>
-          {formatDateToDDMMYY(item.datePrestamo)}
-        </Text>
-      </View>
+    if (tiempo === "Meses") {
+      // Interés simple mensual
+      const interesMonto = cantidad * (interes / 100);
+      totalDeudaInicial = cantidad + periodo * interesMonto;
+    } else if (tiempo === "Días") {
+      if (periodo < 26) {
+        const interesMonto = cantidad * (interes / 100);
+        totalDeudaInicial = cantidad + interesMonto;
+      } else {
+        console.log("El periodo debe ser menor a 26 días");
+        totalDeudaInicial = cantidad; // o podrías devolver 0 si quieres marcar error
+      }
+    }
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("DetallePrestamo", { prestamoId: item.id })
-          }
-        >
-          <Feather name="eye" size={20} color="#2196F3" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleEdit(item)}>
-          <Feather name="edit" size={20} color="#4CAF50" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDelete(item.id)}>
-          <Feather name="trash-2" size={20} color="#f44336" />
-        </TouchableOpacity>
+    return totalDeudaInicial;
+  }
+
+  const renderItem = ({ item }: { item: Prestamo }) => {
+    // 💡 APLICACIÓN DE LA FUNCIÓN DE CÁLCULO
+    const totalCalculado = calcularTotalAPagar(
+      item.cantidad,
+      item.interes,
+      item.periodo,
+      item.tiempo
+    );
+    return (
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Text style={styles.label}>Total a Pagar:</Text>
+          {/* Usamos el color de Total Pendiente/Pagado del Canvas */}
+          <Text
+            style={[
+              styles.value,
+              item.deudaStatus ? styles.totalPendiente : styles.totalPagado,
+            ]}
+          >
+            {item.moneda}
+            {totalCalculado.toFixed(2)}
+          </Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>Estado:</Text>
+          <Text
+            style={[
+              styles.estado,
+              item.deudaStatus ? styles.estadoPendiente : styles.estadoPagado,
+            ]}
+          >
+            {item.deudaStatus ? "Pendiente" : "Pagado"}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Fecha de prestamo:</Text>
+          <Text style={styles.value}>
+            {formatDateToDDMMYY(item.datePrestamo)}
+          </Text>
+        </View>
+
+        <View style={styles.actions}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("DetallePrestamo", { prestamoId: item.id })
+            }
+          >
+            <Feather name="eye" size={20} color="#2196F3" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleEdit(item)}>
+            <Feather name="edit" size={20} color="#4CAF50" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleDelete(item.id)}>
+            <Feather name="trash-2" size={20} color="#f44336" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -158,11 +198,13 @@ export default function PrestamosPorClienteScreen({
 }
 
 const styles = StyleSheet.create({
+  // 1. Fondo ligeramente gris (f9f9f9)
   container: {
     flex: 1,
     padding: 15,
-    backgroundColor: "#fff",
+    backgroundColor: "#f9f9f9",
   },
+  // 2. Estilo del título consistente
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -172,12 +214,20 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ccc",
     paddingBottom: 10,
   },
+  // 3. Estilo de tarjeta con elevación y borde consistente
   card: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 12,
+    // Sombra sutil
+    shadowColor: "#a5a5a5ff",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderLeftWidth: 4,
+    borderLeftColor: "#2196F3", // Azul para el borde de la tarjeta
   },
   row: {
     flexDirection: "row",
@@ -186,33 +236,53 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: "600",
+    color: "#555",
   },
   value: {
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#333",
   },
+  // Colores para el Total a Pagar (consistentes con DetallePrestamoScreen)
+  totalPendiente: {
+    fontWeight: "bold",
+    color: "#D32F2F", // Rojo para pendiente
+  },
+  totalPagado: {
+    fontWeight: "bold",
+    color: "#4CAF50", // Verde para pagado
+  },
+  // Colores para el estado (consistentes con DetallePrestamoScreen)
   estado: {
     fontWeight: "bold",
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingVertical: 3,
+    borderRadius: 6,
+    overflow: "hidden",
+    fontSize: 12,
   },
-  estadoRojo: {
-    backgroundColor: "#f8d7da",
-    color: "#721c24",
+  estadoPendiente: {
+    backgroundColor: "#FFF3E0", // Fondo naranja muy claro
+    color: "#FF9800", // Naranja (statusActive)
   },
-  estadoVerde: {
-    backgroundColor: "#d4edda",
-    color: "#155724",
+  estadoPagado: {
+    backgroundColor: "#E8F5E9", // Fondo verde muy claro
+    color: "#4CAF50", // Verde (statusSettled)
   },
   actions: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "flex-end", // Botones a la derecha
+    gap: 20,
     marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
   },
   empty: {
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 30,
     fontSize: 16,
     color: "#888",
+    paddingHorizontal: 20,
+    lineHeight: 24,
   },
 });
