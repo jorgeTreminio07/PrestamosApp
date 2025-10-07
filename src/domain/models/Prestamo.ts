@@ -1,11 +1,3 @@
-// domain/models/Prestamo.ts
-
-/**
- * Define la estructura de un Préstamo en la aplicación.
- *
- * Incluye campos de entrada (cantidad, interés, fecha) y campos calculados
- * (totalPagar, estado de deuda, y fecha de vencimiento).
- */
 export type Tiempo = "Días" | "Meses";
 export type Moneda = "$" | "C$";
 

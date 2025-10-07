@@ -1,6 +1,6 @@
 export default interface Abono {
-    id: string; // ID único del abono
+    id: string; 
     prestamoId: string; // Clave foránea al ID del préstamo
-    cantidadAbono: number; // Cantidad abonada
-    dateAbono: string; // Fecha en que se realizó el abono (formato YYYY-MM-DD)
+    cantidadAbono: number; 
+    dateAbono: string; 
 }

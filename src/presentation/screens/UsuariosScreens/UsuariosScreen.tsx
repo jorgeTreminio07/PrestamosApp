@@ -9,7 +9,7 @@ import {
   Text,
   TouchableOpacity, // Importado para los botones de paginación
 } from "react-native";
-// 💡 IMPORTACIONES ACTUALIZADAS
+//  IMPORTACIONES ACTUALIZADAS
 import UsuarioRepository from "../../../data/repositories/UsuarioRepository";
 import Usuario from "../../../domain/models/Usuario";
 import UserItem from "../components/Users/UserItem"; // Asumiendo esta ruta
@@ -18,7 +18,7 @@ import UserModal from "../components/Users/UserModal"; // Asumiendo esta ruta
 // --- CONSTANTES DE PAGINACIÓN ---
 const ITEMS_PER_PAGE = 8;
 
-// 💡 Componente de Encabezados (sin cambios en estilo)
+//  Componente de Encabezados (sin cambios en estilo)
 const ListHeader = () => (
   <View style={headerStyles.headerContainer}>
     <Text style={[headerStyles.headerText, headerStyles.nombreColumn]}>
@@ -30,9 +30,9 @@ const ListHeader = () => (
   </View>
 );
 
-// 💡 NOMBRE DEL COMPONENTE ACTUALIZADO
+//  NOMBRE DEL COMPONENTE ACTUALIZADO
 export default function UsuariosScreen() {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]); // 💡 Estado para usuarios (TODOS los usuarios)
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]); //  Estado para usuarios (TODOS los usuarios)
   const [search, setSearch] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [usuarioToEdit, setUsuarioToEdit] = useState<Usuario | undefined>(
@@ -41,7 +41,7 @@ export default function UsuariosScreen() {
   // --- ESTADOS DE PAGINACIÓN ---
   const [currentPage, setCurrentPage] = useState(1); // Página actual
 
-  // 💡 Lógica para cargar usuarios
+  //  Lógica para cargar usuarios
   const loadUsuarios = useCallback(async () => {
     try {
       const data = await UsuarioRepository.getAll();
@@ -57,7 +57,7 @@ export default function UsuariosScreen() {
     loadUsuarios();
   }, [loadUsuarios]);
 
-  // 💡 Lógica de búsqueda
+  //  Lógica de búsqueda
   const handleSearch = async (text: string) => {
     setSearch(text);
     try {
@@ -74,7 +74,7 @@ export default function UsuariosScreen() {
     }
   };
 
-  // 💡 Lógica de guardado (sin cambios relevantes en paginación)
+  //  Lógica de guardado (sin cambios relevantes en paginación)
   const handleSave = async (usuario: Usuario) => {
     try {
       if (usuarioToEdit) {
@@ -96,13 +96,13 @@ export default function UsuariosScreen() {
     }
   };
 
-  // 💡 Lógica de edición
+  //  Lógica de edición
   const handleEdit = (usuario: Usuario) => {
     setUsuarioToEdit(usuario);
     setModalVisible(true);
   };
 
-  // 💡 Lógica de eliminación
+  //  Lógica de eliminación
   const handleDelete = async (id: string) => {
     try {
       Alert.alert(
@@ -152,14 +152,14 @@ export default function UsuariosScreen() {
   return (
     <View style={styles.container}>
       <TextInput
-        // 💡 Placeholder actualizado
+        //  Placeholder actualizado
         placeholder="Buscar por nombre o correo"
         value={search}
         onChangeText={handleSearch}
         style={styles.input}
       />
       <Button
-        title="Crear Nuevo Usuario" // 💡 Título actualizado
+        title="Crear Nuevo Usuario" //  Título actualizado
         onPress={() => {
           setModalVisible(true);
           setUsuarioToEdit(undefined);
@@ -171,7 +171,7 @@ export default function UsuariosScreen() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={ListHeader}
         renderItem={({ item }) => (
-          <UserItem // 💡 Usamos UserItem
+          <UserItem //  Usamos UserItem
             usuario={item}
             onEdit={handleEdit}
             onDelete={handleDelete}
@@ -187,7 +187,7 @@ export default function UsuariosScreen() {
       />
 
       {/* --- CONTROLES DE PAGINACIÓN --- */}
-      {usuarios.length > 0 && ( // 💡 CAMBIO: Mostrar si hay al menos 1 usuario para ver el contador de página
+      {usuarios.length > 0 && ( //  CAMBIO: Mostrar si hay al menos 1 usuario para ver el contador de página
         <View style={styles.paginationContainer}>
           <TouchableOpacity
             onPress={handlePrevPage}
@@ -217,20 +217,20 @@ export default function UsuariosScreen() {
         </View>
       )}
 
-      <UserModal // 💡 Usamos UserModal
+      <UserModal //  Usamos UserModal
         visible={modalVisible}
         onClose={() => {
           setModalVisible(false);
           setUsuarioToEdit(undefined);
         }}
         onSave={handleSave}
-        usuarioToEdit={usuarioToEdit} // 💡 Pasamos el usuario a editar
+        usuarioToEdit={usuarioToEdit} //  Pasamos el usuario a editar
       />
     </View>
   );
 }
 
-// 💡 Estilos del Encabezado (sin cambios)
+//  Estilos del Encabezado (sin cambios)
 const headerStyles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",

@@ -42,7 +42,7 @@ export default function AppNavigator({ onLogout }: AppNavigatorProps) {
           component={DetallePrestamoScreen}
         />
 
-        {/* 💡 RUTA DE ABONOS */}
+        {/* RUTA DE ABONOS */}
         <Stack.Screen
           name="HistorialAbonos"
           component={HistorialAbonosScreen}

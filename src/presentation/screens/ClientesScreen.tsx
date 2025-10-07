@@ -17,7 +17,7 @@ import ClienteModal from "./components/ClienteModal";
 // --- CONSTANTES DE PAGINACIÓN ---
 const ITEMS_PER_PAGE = 8;
 
-// 💡 Nuevo componente para la Fila de Encabezados
+//  Nuevo componente para la Fila de Encabezados
 const ListHeader = () => (
   <View style={headerStyles.headerContainer}>
     {/* Columna Nombre: flex: 1 para ocupar la mayor parte del espacio */}
@@ -172,7 +172,7 @@ export default function ClientesScreen() {
       <FlatList
         data={paginatedClientes} // USAMOS EL ARRAY PAGINADO
         keyExtractor={(item) => item.id}
-        // 💡 Renderizamos la cabecera aquí
+        // Renderizamos la cabecera aquí
         ListHeaderComponent={ListHeader}
         renderItem={({ item }) => (
           <ClienteItem
@@ -234,7 +234,7 @@ export default function ClientesScreen() {
   );
 }
 
-// 💡 Estilos del Encabezado (con margen superior aplicado)
+// Estilos del Encabezado (con margen superior aplicado)
 const headerStyles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",

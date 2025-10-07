@@ -121,7 +121,7 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
 
   // Función para cargar los datos del préstamo
   const loadPrestamo = useCallback(async () => {
-    // 💡 LOG DE DEBUG para confirmar la recarga
+    //   LOG DE DEBUG para confirmar la recarga
     console.log(
       `[DEBUG] Recargando datos de préstamo al enfocar: ${prestamoId}`
     );
@@ -131,7 +131,7 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
     setRefreshing(false);
   }, [prestamoId]);
 
-  // 💡 USAMOS useFocusEffect: Se ejecuta cada vez que la pantalla está enfocada.
+  //   USAMOS useFocusEffect: Se ejecuta cada vez que la pantalla está enfocada.
   useFocusEffect(
     useCallback(() => {
       // Al enfocarse, iniciamos la recarga del préstamo
@@ -198,7 +198,7 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
     navigation.navigate("HistorialAbonos", { prestamoId: prestamoId });
   };
 
-  // 💡 CONFIGURACIÓN DE BOTONES EN EL ENCABEZADO
+  //   CONFIGURACIÓN DE BOTONES EN EL ENCABEZADO
   useLayoutEffect(() => {
     if (prestamo) {
       navigation.setOptions({

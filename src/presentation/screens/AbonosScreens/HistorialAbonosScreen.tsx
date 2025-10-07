@@ -13,7 +13,7 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 
-// 💡 IMPORTACIÓN DEL REPOSITORIO REAL
+// IMPORTACIÓN DEL REPOSITORIO REAL
 // FIX: La interfaz Abono no está disponible como named export, la definimos aquí para resolver el error TS.
 import AbonoRepository from "../../../data/repositories/AbonoRepository";
 
@@ -151,7 +151,7 @@ export default function HistorialAbonosScreen({
   const fetchAbonos = useCallback(async () => {
     setLoading(true);
     try {
-      // 💡 USANDO EL REPOSITORIO REAL
+      //  USANDO EL REPOSITORIO REAL
       const data = await AbonoRepository.getByPrestamoId(prestamoId);
       setAbonos(data);
     } catch (error) {
@@ -199,7 +199,7 @@ export default function HistorialAbonosScreen({
         dateAbono: newDate,
       };
 
-      // 💡 LLAMADA AL REPOSITORIO: Actualiza la tabla de abonos y el balance del préstamo
+      // LLAMADA AL REPOSITORIO: Actualiza la tabla de abonos y el balance del préstamo
       await AbonoRepository.update(updatedAbono);
 
       Alert.alert(
@@ -229,7 +229,7 @@ export default function HistorialAbonosScreen({
           onPress: async () => {
             setLoading(true);
             try {
-              // 💡 LLAMADA AL REPOSITORIO: Elimina el abono y ajusta el balance del préstamo
+              //  LLAMADA AL REPOSITORIO: Elimina el abono y ajusta el balance del préstamo
               await AbonoRepository.delete(abono.id);
               Alert.alert(
                 "Éxito",
@@ -318,7 +318,7 @@ export default function HistorialAbonosScreen({
         />
       )}
 
-      {/* 💡 MODAL DE EDICIÓN */}
+      {/*  MODAL DE EDICIÓN */}
       <AbonoInputModal
         isVisible={isAbonoModalVisible}
         title="Editar Abono"

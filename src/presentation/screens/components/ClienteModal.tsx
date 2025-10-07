@@ -31,7 +31,7 @@ export default function ClienteModal({
   onSave,
   clienteToEdit,
 }: Props) {
-  // 💡 ESTADOS DE DATOS
+  //     ESTADOS DE DATOS
   const [nombre, setNombre] = useState(clienteToEdit?.nombre || "");
   const [cedula, setCedula] = useState(clienteToEdit?.cedula || "");
   const [direccion, setDireccion] = useState(clienteToEdit?.direccion || "");
@@ -39,10 +39,10 @@ export default function ClienteModal({
     clienteToEdit?.numeroTelefono || ""
   );
 
-  // 💡 ESTADO DE ERRORES: Inicialmente todos falsos
+  //     ESTADO DE ERRORES: Inicialmente todos falsos
   const [errors, setErrors] = useState<ErrorState>(initialErrors);
 
-  // 💡 EFECTO para resetear los campos y errores cuando el modal se abre/cierra o clienteToEdit cambia
+  //     EFECTO para resetear los campos y errores cuando el modal se abre/cierra o clienteToEdit cambia
   useEffect(() => {
     if (visible) {
       setNombre(clienteToEdit?.nombre || "");
@@ -211,12 +211,12 @@ const styles = StyleSheet.create({
     marginBottom: 10, // Menor margen aquí para que el errorText quepa
     padding: 8,
   },
-  // 💡 NUEVO ESTILO: Borde rojo para el error
+  //     NUEVO ESTILO: Borde rojo para el error
   inputError: {
     borderColor: "red",
     borderWidth: 2, // Hacemos el borde un poco más grueso para que se note
   },
-  // 💡 NUEVO ESTILO: Texto de error
+  //     NUEVO ESTILO: Texto de error
   errorText: {
     color: "red",
     fontSize: 12,

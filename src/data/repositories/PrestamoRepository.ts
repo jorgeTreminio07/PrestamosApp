@@ -1,18 +1,11 @@
-// src/data/repositories/PrestamoRepository.ts
-
-// ⚠️ Importamos getDB para obtener la instancia de la base de datos
+// Importamos getDB para obtener la instancia de la base de datos
 import { getDB } from '../database/database';
 import Prestamo, { Tiempo } from '../../domain/models/Prestamo'; 
 import * as SQLite from 'expo-sqlite'; 
 import uuid from 'react-native-uuid';
 import AbonoRepository from './AbonoRepository';
 
-// NOTA: Utilizamos una clase con métodos estáticos para seguir la convención del ClienteRepository.
-
 export default class PrestamoRepository {
-
-    
-
     /**
      * Calcula el monto total inicial (Principal + Interés) y la fecha de vencimiento.
      * @param prestamo Datos de entrada del préstamo (cantidad, interés, periodo, tiempo, fecha).
@@ -67,9 +60,6 @@ export default class PrestamoRepository {
 
 
     // --- 1. OBTENER TODOS ---
-    /**
-     * Obtiene todos los préstamos, ordenados por fecha de forma descendente.
-     */
     static async getAll(): Promise<Prestamo[]> {
         const db = await getDB();
         // Usamos .getAllAsync para obtener una lista tipada.
@@ -78,10 +68,7 @@ export default class PrestamoRepository {
         return prestamos;
     }
 
-    // --- 2. OBTENER POR ID (NECESARIO) ---
-    /**
-     * Obtiene un préstamo específico por su ID.
-     */
+    // --- 2. OBTENER POR ID 
     static async getById(id: string): Promise<Prestamo | null> {
         const db = await getDB();
         // Usamos .getFirstAsync para obtener un solo resultado.
@@ -91,9 +78,6 @@ export default class PrestamoRepository {
     }
 
     // --- 3. BUSCAR ---
-    /**
-     * Busca préstamos por nombre o ID del cliente.
-     */
     static async search(query: string): Promise<Prestamo[]> {
         const db = await getDB();
         const searchParam = `%${query}%`;
@@ -107,10 +91,7 @@ export default class PrestamoRepository {
     }
 
 
-    // --- 4. CREAR (INSERT) ---
-    /**
-     * Crea un nuevo préstamo. El repositorio se encarga de calcular los valores iniciales.
-     */
+    // --- 4. CREAR 
     static async create(prestamo: Prestamo): Promise<void> {
         const db = await getDB();
         const id = uuid.v4().toString();
@@ -138,11 +119,7 @@ export default class PrestamoRepository {
         );
     }
 
-    // --- 5. ACTUALIZAR (UPDATE) ---
-    /**
-     * Actualiza los campos principales de un préstamo.
-     * Requiere el préstamo completo (incluyendo los valores de estado actuales).
-     */
+    // --- 5. ACTUALIZAR
     static async update(prestamo: Prestamo): Promise<void> {
         const db = await getDB();
         
@@ -168,9 +145,6 @@ export default class PrestamoRepository {
     }
 
     // --- 6. ELIMINAR ---
-    /**
-     * Elimina un préstamo por su ID.
-     */
     static async delete(id: string): Promise<void> {
         const db = await getDB();
         await db.runAsync('DELETE FROM prestamos WHERE id = ?', [id]);

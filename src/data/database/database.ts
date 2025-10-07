@@ -41,7 +41,7 @@ export const initDB = async (): Promise<void> => {
         );`
     );
 
-    // 💡 Ejecutamos el comando de creación de la tabla PRÉSTAMOS
+    // Ejecutamos el comando de creación de la tabla PRÉSTAMOS
     await db.execAsync(
         `
         CREATE TABLE IF NOT EXISTS prestamos (
@@ -64,7 +64,7 @@ export const initDB = async (): Promise<void> => {
         `
     );
 
-    // 💰 EJECUTAMOS EL COMANDO DE CREACIÓN DE LA TABLA ABONOS
+    // EJECUTAMOS EL COMANDO DE CREACIÓN DE LA TABLA ABONOS
     await db.execAsync(
         `
         CREATE TABLE IF NOT EXISTS abonos (
