@@ -89,7 +89,10 @@ export default function PrestamoModal({
     const cliente = clientes.find((c) => c.id === clienteId);
     if (!cliente) return;
 
-    const fechaActual = new Date().toISOString().split("T")[0];
+    const hoy = new Date();
+    const fechaActual = `${hoy.getFullYear()}-${String(
+      hoy.getMonth() + 1
+    ).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
 
     const prestamo: Prestamo = {
       id: prestamoToEdit?.id ?? "",
