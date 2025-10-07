@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,9 @@ import { Feather } from "@expo/vector-icons";
 import PrestamoModal from "../components/Prestamo/PretamoModal";
 import { useFocusEffect } from "@react-navigation/native";
 
+// --- CONSTANTES DE PAGINACIÓN ---
+const ITEMS_PER_PAGE = 3; // Mostrar 3 préstamos por página
+
 type Props = NativeStackScreenProps<RootStackParamList, "PrestamosPorCliente">;
 
 export default function PrestamosPorClienteScreen({
@@ -25,11 +28,15 @@ export default function PrestamosPorClienteScreen({
   const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [prestamoToEdit, setPrestamoToEdit] = useState<Prestamo | null>(null);
+  // --- ESTADOS DE PAGINACIÓN ---
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
 
   // 💡 Función para cargar los préstamos, envuelta en useCallback
   const loadPrestamos = useCallback(async () => {
     const data = await PrestamoRepository.search(clienteId);
     setPrestamos(data);
+    setCurrentPage(1); // Resetear a la primera página en cada recarga
+    console.log("Total préstamos cargados:", data.length); // DEBUG
   }, [clienteId]);
 
   useFocusEffect(
@@ -49,8 +56,8 @@ export default function PrestamosPorClienteScreen({
           style: "destructive",
           onPress: async () => {
             await PrestamoRepository.delete(id);
-            const actualizados = await PrestamoRepository.search(clienteId);
-            setPrestamos(actualizados);
+            // Recargar datos y resetear la paginación
+            loadPrestamos();
           },
         },
       ]
@@ -64,8 +71,8 @@ export default function PrestamosPorClienteScreen({
 
   const handleSave = async (prestamoEditado: Prestamo) => {
     await PrestamoRepository.update(prestamoEditado);
-    const actualizados = await PrestamoRepository.search(clienteId);
-    setPrestamos(actualizados);
+    // Recargar datos y resetear la paginación
+    loadPrestamos();
     setModalVisible(false);
     setPrestamoToEdit(null);
   };
@@ -100,6 +107,37 @@ export default function PrestamosPorClienteScreen({
 
     return totalDeudaInicial;
   }
+
+  // --- LÓGICA DE PAGINACIÓN ---
+  // Calcula los préstamos a mostrar en la página actual
+  const paginatedPrestamos = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+
+    const slicedPrestamos = prestamos.slice(startIndex, endIndex);
+
+    // DEBUG
+    console.log(
+      `Préstamos mostrados en la página ${currentPage}:`,
+      slicedPrestamos.length
+    );
+
+    return slicedPrestamos;
+  }, [prestamos, currentPage]);
+
+  const totalPages = Math.ceil(prestamos.length / ITEMS_PER_PAGE);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const renderItem = ({ item }: { item: Prestamo }) => {
     // 💡 APLICACIÓN DE LA FUNCIÓN DE CÁLCULO
@@ -166,7 +204,7 @@ export default function PrestamosPorClienteScreen({
     <View style={styles.container}>
       <Text style={styles.title}>Préstamos de {clienteNombre}</Text>
       <FlatList
-        data={prestamos}
+        data={paginatedPrestamos} // USAMOS EL ARRAY PAGINADO
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListEmptyComponent={() => (
@@ -175,6 +213,38 @@ export default function PrestamosPorClienteScreen({
           </Text>
         )}
       />
+
+      {/* --- CONTROLES DE PAGINACIÓN --- */}
+      {prestamos.length > 0 && (
+        <View style={styles.paginationContainer}>
+          <TouchableOpacity
+            onPress={handlePrevPage}
+            disabled={currentPage === 1}
+            style={[
+              styles.paginationButton,
+              currentPage === 1 && styles.disabledButton,
+            ]}
+          >
+            <Text style={styles.paginationText}>Anterior</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.pageInfo}>
+            Página {currentPage} de {totalPages}
+          </Text>
+
+          <TouchableOpacity
+            onPress={handleNextPage}
+            disabled={currentPage === totalPages}
+            style={[
+              styles.paginationButton,
+              currentPage === totalPages && styles.disabledButton,
+            ]}
+          >
+            <Text style={styles.paginationText}>Siguiente</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <PrestamoModal
         visible={modalVisible}
         onClose={() => {
@@ -284,5 +354,32 @@ const styles = StyleSheet.create({
     color: "#888",
     paddingHorizontal: 20,
     lineHeight: 24,
+  },
+  // --- ESTILOS DE PAGINACIÓN ---
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    marginTop: 10,
+  },
+  paginationButton: {
+    backgroundColor: "#2196F3", // Color azul principal
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  disabledButton: {
+    backgroundColor: "#ccc",
+  },
+  paginationText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  pageInfo: {
+    fontSize: 16,
+    color: "#333",
   },
 });

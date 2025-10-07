@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View,
   TextInput,
@@ -7,11 +7,15 @@ import {
   StyleSheet,
   Alert,
   Text,
+  TouchableOpacity, // Necesario para los botones de paginación
 } from "react-native";
 import ClienteRepository from "../../data/repositories/ClienteRepository";
 import Cliente from "../../domain/models/Cliente";
 import ClienteItem from "./components/ClienteItem";
 import ClienteModal from "./components/ClienteModal";
+
+// --- CONSTANTES DE PAGINACIÓN ---
+const ITEMS_PER_PAGE = 8;
 
 // 💡 Nuevo componente para la Fila de Encabezados
 const ListHeader = () => (
@@ -35,11 +39,15 @@ export default function ClientesScreen() {
   const [clienteToEdit, setClienteToEdit] = useState<Cliente | undefined>(
     undefined
   );
+  // --- ESTADOS DE PAGINACIÓN ---
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
 
   const loadClientes = useCallback(async () => {
     try {
       const data = await ClienteRepository.getAll();
       setClientes(data);
+      setCurrentPage(1); // Resetear a la primera página después de una carga completa
+      console.log("Total clientes cargados:", data.length); // DEBUG
     } catch (error) {
       console.error("Error al cargar clientes:", error);
       Alert.alert("Error", "No se pudieron cargar los clientes.");
@@ -54,10 +62,11 @@ export default function ClientesScreen() {
     setSearch(text);
     try {
       if (text.trim() === "") {
-        loadClientes();
+        loadClientes(); // Recarga y resetea la página
       } else {
         const data = await ClienteRepository.search(text);
         setClientes(data);
+        setCurrentPage(1); // Resetear a la primera página con los resultados de búsqueda
       }
     } catch (error) {
       console.error("Error en la búsqueda:", error);
@@ -72,7 +81,7 @@ export default function ClientesScreen() {
         await ClienteRepository.create(cliente);
       }
 
-      loadClientes();
+      loadClientes(); // Recarga los datos y resetea la paginación
       setModalVisible(false);
       setClienteToEdit(undefined);
       Alert.alert(
@@ -101,7 +110,7 @@ export default function ClientesScreen() {
             text: "Eliminar",
             onPress: async () => {
               await ClienteRepository.delete(id);
-              loadClientes();
+              loadClientes(); // Recarga y resetea la paginación
               Alert.alert("Éxito", "Cliente eliminado correctamente.");
             },
           },
@@ -110,6 +119,37 @@ export default function ClientesScreen() {
     } catch (error) {
       console.error("Error al eliminar:", error);
       Alert.alert("Error", "Hubo un problema al eliminar el cliente.");
+    }
+  };
+
+  // --- LÓGICA DE PAGINACIÓN ---
+  // Calcula los clientes a mostrar en la página actual
+  const paginatedClientes = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+
+    const slicedClientes = clientes.slice(startIndex, endIndex);
+
+    // DEBUG
+    console.log(
+      `Clientes mostrados en la página ${currentPage}:`,
+      slicedClientes.length
+    );
+
+    return slicedClientes;
+  }, [clientes, currentPage]);
+
+  const totalPages = Math.ceil(clientes.length / ITEMS_PER_PAGE);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -130,7 +170,7 @@ export default function ClientesScreen() {
         }}
       />
       <FlatList
-        data={clientes}
+        data={paginatedClientes} // USAMOS EL ARRAY PAGINADO
         keyExtractor={(item) => item.id}
         // 💡 Renderizamos la cabecera aquí
         ListHeaderComponent={ListHeader}
@@ -142,9 +182,45 @@ export default function ClientesScreen() {
           />
         )}
         ListEmptyComponent={() => (
-          <Text style={styles.emptyText}>No hay clientes registrados.</Text>
+          <Text style={styles.emptyText}>
+            {search.trim() !== ""
+              ? "No se encontraron resultados para la búsqueda."
+              : "No hay clientes registrados."}
+          </Text>
         )}
       />
+
+      {/* --- CONTROLES DE PAGINACIÓN --- */}
+      {clientes.length > 0 && ( // Muestra si hay al menos 1 cliente
+        <View style={styles.paginationContainer}>
+          <TouchableOpacity
+            onPress={handlePrevPage}
+            disabled={currentPage === 1}
+            style={[
+              styles.paginationButton,
+              currentPage === 1 && styles.disabledButton,
+            ]}
+          >
+            <Text style={styles.paginationText}>Anterior</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.pageInfo}>
+            Página {currentPage} de {totalPages}
+          </Text>
+
+          <TouchableOpacity
+            onPress={handleNextPage}
+            disabled={currentPage === totalPages}
+            style={[
+              styles.paginationButton,
+              currentPage === totalPages && styles.disabledButton,
+            ]}
+          >
+            <Text style={styles.paginationText}>Siguiente</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <ClienteModal
         visible={modalVisible}
         onClose={() => {
@@ -202,5 +278,32 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: "#888",
+  },
+  // --- ESTILOS DE PAGINACIÓN (Añadidos) ---
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    marginTop: 10,
+  },
+  paginationButton: {
+    backgroundColor: "#007bff",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  disabledButton: {
+    backgroundColor: "#ccc",
+  },
+  paginationText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  pageInfo: {
+    fontSize: 16,
+    color: "#333",
   },
 });

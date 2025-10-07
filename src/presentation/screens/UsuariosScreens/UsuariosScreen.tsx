@@ -1,6 +1,4 @@
-// ./src/screens/UsuariosScreen/UsuariosScreen.tsx
-
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View,
   TextInput,
@@ -9,12 +7,16 @@ import {
   StyleSheet,
   Alert,
   Text,
+  TouchableOpacity, // Importado para los botones de paginación
 } from "react-native";
 // 💡 IMPORTACIONES ACTUALIZADAS
 import UsuarioRepository from "../../../data/repositories/UsuarioRepository";
 import Usuario from "../../../domain/models/Usuario";
 import UserItem from "../components/Users/UserItem"; // Asumiendo esta ruta
 import UserModal from "../components/Users/UserModal"; // Asumiendo esta ruta
+
+// --- CONSTANTES DE PAGINACIÓN ---
+const ITEMS_PER_PAGE = 8;
 
 // 💡 Componente de Encabezados (sin cambios en estilo)
 const ListHeader = () => (
@@ -30,18 +32,21 @@ const ListHeader = () => (
 
 // 💡 NOMBRE DEL COMPONENTE ACTUALIZADO
 export default function UsuariosScreen() {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]); // 💡 Estado para usuarios
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]); // 💡 Estado para usuarios (TODOS los usuarios)
   const [search, setSearch] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [usuarioToEdit, setUsuarioToEdit] = useState<Usuario | undefined>( // 💡 Estado para edición
+  const [usuarioToEdit, setUsuarioToEdit] = useState<Usuario | undefined>(
     undefined
   );
+  // --- ESTADOS DE PAGINACIÓN ---
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
 
   // 💡 Lógica para cargar usuarios
   const loadUsuarios = useCallback(async () => {
     try {
       const data = await UsuarioRepository.getAll();
       setUsuarios(data);
+      setCurrentPage(1); // Resetear a la primera página después de una carga completa
     } catch (error) {
       console.error("Error al cargar usuarios:", error);
       Alert.alert("Error", "No se pudieron cargar los usuarios.");
@@ -57,18 +62,19 @@ export default function UsuariosScreen() {
     setSearch(text);
     try {
       if (text.trim() === "") {
-        loadUsuarios();
+        loadUsuarios(); // Ya resetea la página
       } else {
         // Usamos el search del UsuarioRepository
         const data = await UsuarioRepository.search(text);
         setUsuarios(data);
+        setCurrentPage(1); // Resetear a la primera página con los resultados de búsqueda
       }
     } catch (error) {
       console.error("Error en la búsqueda:", error);
     }
   };
 
-  // 💡 Lógica de guardado
+  // 💡 Lógica de guardado (sin cambios relevantes en paginación)
   const handleSave = async (usuario: Usuario) => {
     try {
       if (usuarioToEdit) {
@@ -77,7 +83,7 @@ export default function UsuariosScreen() {
         await UsuarioRepository.create(usuario);
       }
 
-      loadUsuarios();
+      loadUsuarios(); // Recarga los datos y resetea la paginación
       setModalVisible(false);
       setUsuarioToEdit(undefined);
       Alert.alert(
@@ -108,7 +114,7 @@ export default function UsuariosScreen() {
             text: "Eliminar",
             onPress: async () => {
               await UsuarioRepository.delete(id);
-              loadUsuarios();
+              loadUsuarios(); // Recarga y resetea la paginación
               Alert.alert("Éxito", "Usuario eliminado correctamente.");
             },
           },
@@ -117,6 +123,28 @@ export default function UsuariosScreen() {
     } catch (error) {
       console.error("Error al eliminar:", error);
       Alert.alert("Error", "Hubo un problema al eliminar el usuario.");
+    }
+  };
+
+  // --- LÓGICA DE PAGINACIÓN ---
+  // Calcula los usuarios a mostrar en la página actual
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return usuarios.slice(startIndex, endIndex);
+  }, [usuarios, currentPage]);
+
+  const totalPages = Math.ceil(usuarios.length / ITEMS_PER_PAGE);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -138,7 +166,8 @@ export default function UsuariosScreen() {
         }}
       />
       <FlatList
-        data={usuarios} // 💡 Usamos el estado de usuarios
+        // Usamos el arreglo PAGINADO como fuente de datos
+        data={paginatedUsers}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={ListHeader}
         renderItem={({ item }) => (
@@ -149,9 +178,45 @@ export default function UsuariosScreen() {
           />
         )}
         ListEmptyComponent={() => (
-          <Text style={styles.emptyText}>No hay usuarios registrados.</Text>
+          <Text style={styles.emptyText}>
+            {search.trim() !== ""
+              ? "No se encontraron resultados para la búsqueda."
+              : "No hay usuarios registrados."}
+          </Text>
         )}
       />
+
+      {/* --- CONTROLES DE PAGINACIÓN --- */}
+      {usuarios.length > 0 && ( // 💡 CAMBIO: Mostrar si hay al menos 1 usuario para ver el contador de página
+        <View style={styles.paginationContainer}>
+          <TouchableOpacity
+            onPress={handlePrevPage}
+            disabled={currentPage === 1}
+            style={[
+              styles.paginationButton,
+              currentPage === 1 && styles.disabledButton,
+            ]}
+          >
+            <Text style={styles.paginationText}>Anterior</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.pageInfo}>
+            Página {currentPage} de {totalPages}
+          </Text>
+
+          <TouchableOpacity
+            onPress={handleNextPage}
+            disabled={currentPage === totalPages}
+            style={[
+              styles.paginationButton,
+              currentPage === totalPages && styles.disabledButton,
+            ]}
+          >
+            <Text style={styles.paginationText}>Siguiente</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <UserModal // 💡 Usamos UserModal
         visible={modalVisible}
         onClose={() => {
@@ -208,5 +273,32 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: "#888",
+  },
+  // --- ESTILOS DE PAGINACIÓN ---
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    marginTop: 10,
+  },
+  paginationButton: {
+    backgroundColor: "#007bff",
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  disabledButton: {
+    backgroundColor: "#ccc",
+  },
+  paginationText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  pageInfo: {
+    fontSize: 16,
+    color: "#333",
   },
 });
