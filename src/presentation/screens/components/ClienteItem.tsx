@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 18,
-    fontWeight: "normal",
-    color: "#333",
+    fontWeight: "600",
+    color: "#ffffffff",
   },
   separator: {
     height: 1,
@@ -160,7 +160,8 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     marginTop: 10,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#888",
     borderRadius: 10,
+    color: "#fff",
   },
 });

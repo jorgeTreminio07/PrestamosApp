@@ -11,7 +11,7 @@ import {
   Alert, // Usamos Alert para simplicidad en Expo/RN
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 
 // 💡 IMPORTACIÓN DEL REPOSITORIO REAL
 // FIX: La interfaz Abono no está disponible como named export, la definimos aquí para resolver el error TS.
@@ -304,7 +304,7 @@ export default function HistorialAbonosScreen({
                   onPress={() => handleEditAbono(item)}
                   style={[styles.actionButton, styles.editButton]}
                 >
-                  <MaterialIcons name="edit" size={20} color="#fff" />
+                  <Feather name="edit" size={20} color="#fff" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDeleteAbono(item)}
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   editButton: {
-    backgroundColor: "#FFA500", // Naranja
+    backgroundColor: "#4CAF50", // Naranja
   },
   deleteButton: {
     backgroundColor: "#D32F2F", // Rojo

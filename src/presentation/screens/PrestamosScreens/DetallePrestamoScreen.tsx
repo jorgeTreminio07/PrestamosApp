@@ -86,7 +86,7 @@ const AbonoInputModal = ({
           />
           <View style={modalStyles.buttonContainer}>
             <TouchableOpacity
-              style={[modalStyles.modalButton, { backgroundColor: "#ccc" }]}
+              style={[modalStyles.modalButton, { backgroundColor: "#888" }]}
               onPress={onClose}
             >
               <Text style={modalStyles.textStyle}>Cancelar</Text>
