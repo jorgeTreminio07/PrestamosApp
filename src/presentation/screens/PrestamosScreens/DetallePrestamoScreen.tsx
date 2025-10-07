@@ -297,49 +297,103 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Detalle del Préstamo</Text>
-      <Text style={styles.item}>Cliente: {prestamo.clienteNombre}</Text>
-      <Text style={styles.item}>
-        Cantidad Original: {prestamo.moneda}
-        {prestamo.cantidad.toFixed(2)}
-      </Text>
-      <Text style={styles.item}>Interés: {prestamo.interes}%</Text>
-      <Text style={styles.item}>Total a Pagar: {totalAPagar.toFixed(2)}</Text>
-      <Text style={[styles.item, styles.highlightTotal]}>
-        Total Pendiente: {prestamo.moneda}
-        {prestamo.totalPagar.toFixed(2)}
-      </Text>
-      <Text style={[styles.item, styles.highlightPaid]}>
-        Monto Abonado: {prestamo.moneda}
-        {prestamo.montoPagado.toFixed(2)}
-      </Text>
-      <Text style={styles.separator}></Text>
-      <Text style={styles.item}>
-        Fecha de Préstamo: {formatDateToDDMMYY(prestamo.datePrestamo)}
-      </Text>
-      <Text style={styles.item}>
-        Fecha de Vencimiento: {formatDateToDDMMYY(prestamo.fechaVencimiento)}
-      </Text>
-      <Text style={styles.item}>
-        Periodo: {prestamo.periodo} {prestamo.tiempo}
-      </Text>
-      <Text
-        style={[
-          styles.item,
-          prestamo.deudaStatus ? styles.statusActive : styles.statusSettled,
-        ]}
-      >
-        Estado: {prestamo.deudaStatus ? "Pendiente" : "Pagado (Saldado)"}
-      </Text>
-      <Text style={styles.item}>
-        Cuota por día: {prestamo.moneda}
-        {cuotaPorDia.toFixed(2)}
-      </Text>
-      {prestamo.demoraDias > 0 && (
-        <Text style={[styles.item, styles.demora]}>
-          Demora: {prestamo.demoraDias} días
-        </Text>
-      )}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Información del Préstamo</Text>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Cliente:</Text>
+          <Text style={styles.value}>{prestamo.clienteNombre}</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Cantidad Original:</Text>
+          <Text style={styles.value}>
+            {prestamo.moneda}
+            {prestamo.cantidad.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Interés:</Text>
+          <Text style={styles.value}>{prestamo.interes}%</Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Total a Pagar:</Text>
+          <Text style={[styles.value, styles.highlightBlue]}>
+            {prestamo.moneda}
+            {totalAPagar.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Total Pendiente:</Text>
+          <Text style={[styles.value, styles.highlightRed]}>
+            {prestamo.moneda}
+            {prestamo.totalPagar.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Monto Abonado:</Text>
+          <Text style={[styles.value, styles.highlightGreen]}>
+            {prestamo.moneda}
+            {prestamo.montoPagado.toFixed(2)}
+          </Text>
+        </View>
+
+        <View style={styles.separator} />
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Fecha de Préstamo:</Text>
+          <Text style={styles.value}>
+            {formatDateToDDMMYY(prestamo.datePrestamo)}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Fecha de Vencimiento:</Text>
+          <Text style={styles.value}>
+            {formatDateToDDMMYY(prestamo.fechaVencimiento)}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Periodo:</Text>
+          <Text style={styles.value}>
+            {prestamo.periodo} {prestamo.tiempo}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Estado:</Text>
+          <Text
+            style={[
+              styles.value,
+              prestamo.deudaStatus ? styles.statusActive : styles.statusSettled,
+            ]}
+          >
+            {prestamo.deudaStatus ? "Pendiente" : "Pagado (Saldado)"}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>Cuota por día:</Text>
+          <Text style={styles.value}>
+            {prestamo.moneda}
+            {cuotaPorDia.toFixed(2)}
+          </Text>
+        </View>
+
+        {prestamo.demoraDias > 0 && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Demora:</Text>
+            <Text style={[styles.value, styles.demora]}>
+              {prestamo.demoraDias} días
+            </Text>
+          </View>
+        )}
+      </View>
 
       <View style={styles.bottomActions}>
         {/* Botón Principal: Registrar Abono (Verde) */}
@@ -431,13 +485,85 @@ const modalStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#F3F6FB",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
-  headerButtons: {
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1E88E5",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  row: {
     flexDirection: "row",
-    gap: 10,
-    marginRight: 5,
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  label: {
+    fontSize: 16,
+    color: "#6B7280", // gris suave
+    fontWeight: "500",
+  },
+  value: {
+    fontSize: 16,
+    color: "#111827",
+    fontWeight: "700", // Dato en negrita
+  },
+  highlightBlue: {
+    color: "#1E88E5",
+  },
+  highlightRed: {
+    color: "#E53935",
+  },
+  highlightGreen: {
+    color: "#43A047",
+  },
+  separator: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+    marginVertical: 12,
+  },
+  statusActive: {
+    color: "#FB8C00",
+  },
+  statusSettled: {
+    color: "#4CAF50",
+  },
+  demora: {
+    color: "#E53935",
+  },
+  bottomActions: {
+    marginTop: 25,
+    alignItems: "center",
+  },
+  actionButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    shadowColor: "#4CAF50",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   headerButton: {
     padding: 8,
@@ -447,56 +573,15 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    paddingBottom: 10,
-  },
-  item: {
-    fontSize: 16,
-    marginBottom: 10,
-    color: "#555",
-  },
-  highlightTotal: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#D32F2F", // Rojo para el saldo pendiente
-    marginTop: 5,
-  },
-  highlightPaid: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#4CAF50", // Verde para el monto pagado
-    marginBottom: 15,
-  },
-  separator: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    marginBottom: 15,
-  },
-  statusActive: {
-    color: "#FF9800", // Naranja para pendiente
-    fontWeight: "bold",
-  },
-  statusSettled: {
-    color: "#4CAF50", // Verde para pagado
-    fontWeight: "bold",
-  },
-  demora: {
-    color: "#D32F2F", // Rojo para demora
-    fontWeight: "bold",
-  },
   error: {
     fontSize: 16,
     color: "red",
     textAlign: "center",
     marginTop: 50,
   },
-  bottomActions: {
-    marginTop: 20,
+  headerButtons: {
+    flexDirection: "row",
+    gap: 10,
+    marginRight: 5,
   },
 });

@@ -137,7 +137,7 @@ export default function PrestamosPorClienteScreen({
         </View>
 
         <View style={styles.row}>
-          <Text style={styles.label}>Fecha de prestamo:</Text>
+          <Text style={styles.label}>Fecha de préstamo:</Text>
           <Text style={styles.value}>
             {formatDateToDDMMYY(item.datePrestamo)}
           </Text>

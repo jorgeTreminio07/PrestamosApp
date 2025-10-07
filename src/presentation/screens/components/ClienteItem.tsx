@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Modal,
   TouchableWithoutFeedback,
-  Alert,
 } from "react-native";
 import Cliente from "../../../domain/models/Cliente";
 import { Feather } from "@expo/vector-icons";
@@ -24,16 +23,12 @@ interface Props {
 
 export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [detalleVisible, setDetalleVisible] = useState(false);
   const navigation = useNavigation<NavigationProp>();
 
   const handleView = () => {
     setMenuVisible(false);
-    const detailsText =
-      `Nombre: ${cliente.nombre}\n` +
-      `Cédula: ${cliente.cedula}\n` +
-      `Dirección: ${cliente.direccion}\n` +
-      `Teléfono: ${cliente.numeroTelefono}`;
-    Alert.alert("Detalles Cliente", detailsText, [{ text: "Cerrar" }]);
+    setDetalleVisible(true);
   };
 
   const handleEdit = () => {
@@ -61,7 +56,7 @@ export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
           <View style={styles.menuBox}>
             <TouchableOpacity style={styles.menuOption} onPress={handleView}>
               <Text style={[styles.menuText, { color: "#2196F3" }]}>
-                Ver Detalles de usuario
+                Ver Detalles de Cliente
               </Text>
             </TouchableOpacity>
             <View style={styles.separator} />
@@ -89,11 +84,48 @@ export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
               style={[styles.menuOption, styles.cancelButton]}
               onPress={() => setMenuVisible(false)}
             >
-              <Text style={styles.menuText}>Cancelar</Text>
+              <Text style={[styles.menuText, { color: "#fff" }]}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </TouchableWithoutFeedback>
+    </Modal>
+  );
+
+  const DetalleClienteModal = () => (
+    <Modal visible={detalleVisible} animationType="fade" transparent>
+      <View style={styles.overlay}>
+        <View style={styles.detalleContainer}>
+          <View style={styles.header}>
+            <Feather name="user" size={26} color="#2196F3" />
+            <Text style={styles.titulo}>Detalles del Cliente</Text>
+          </View>
+
+          <View style={styles.detalleItem}>
+            <Text style={styles.label}>👤 Nombre:</Text>
+            <Text style={styles.value}>{cliente.nombre}</Text>
+          </View>
+          <View style={styles.detalleItem}>
+            <Text style={styles.label}>🪪 Cédula:</Text>
+            <Text style={styles.value}>{cliente.cedula}</Text>
+          </View>
+          <View style={styles.detalleItem}>
+            <Text style={styles.label}>🏠 Dirección:</Text>
+            <Text style={styles.value}>{cliente.direccion}</Text>
+          </View>
+          <View style={styles.detalleItem}>
+            <Text style={styles.label}>📞 Teléfono:</Text>
+            <Text style={styles.value}>{cliente.numeroTelefono}</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setDetalleVisible(false)}
+          >
+            <Text style={styles.closeText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 
@@ -106,7 +138,9 @@ export default function ClienteItem({ cliente, onEdit, onDelete }: Props) {
       >
         <Feather name="more-vertical" size={24} color="#333" />
       </TouchableOpacity>
+
       <OptionsMenu />
+      <DetalleClienteModal />
     </View>
   );
 }
@@ -151,7 +185,6 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#ffffffff",
   },
   separator: {
     height: 1,
@@ -162,6 +195,58 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: "#888",
     borderRadius: 10,
+    paddingVertical: 12,
+  },
+  // === Detalle bonito ===
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
+  detalleContainer: {
+    backgroundColor: "#fff",
+    width: "85%",
+    borderRadius: 15,
+    padding: 25,
+    elevation: 10,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 15,
+  },
+  titulo: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    marginLeft: 8,
+  },
+  detalleItem: {
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#555",
+  },
+  value: {
+    fontSize: 16,
+    color: "#222",
+    marginTop: 2,
+    marginLeft: 10,
+  },
+  closeButton: {
+    marginTop: 15,
+    backgroundColor: "#2196F3",
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  closeText: {
     color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });

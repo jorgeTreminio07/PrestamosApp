@@ -231,7 +231,14 @@ export default function PrestamoModal({
             <View style={styles.buttons}>
               <Button title="Cancelar" onPress={onClose} color="#888" />
               {/* 4. Botón Cotizar */}
-              <Button title="Cotizar" onPress={handleCotizar} color="#17A2B8" />
+              {!prestamoToEdit && (
+                <Button
+                  title="Cotizar"
+                  onPress={handleCotizar}
+                  color="#17A2B8"
+                />
+              )}
+              {/* <Button title="Cotizar" onPress={handleCotizar} color="#17A2B8" /> */}
               <Button title="Guardar" onPress={handleSave} />
             </View>
           </View>
