@@ -121,16 +121,12 @@ export default function PrestamosPorClienteScreen({
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // 📄 Generar PDF con abonos reales
-  const handleGeneratePDF = async (item: Prestamo) => {
+  // 📄 Generar y compartir PDF con abonos reales
+  const handleGenerateAndSharePDF = async (item: Prestamo) => {
     try {
-      // ✅ Obtener cliente desde la BD
       const cliente = await ClienteRepository.findById(item.clienteId);
-
-      // 1️⃣ Obtener todos los abonos del préstamo
       const abonos = await AbonoRepository.getByPrestamoId(item.id);
 
-      // 2️⃣ Calcular total a pagar (igual que antes)
       const total = calcularTotalAPagar(
         item.cantidad,
         item.interes,
@@ -138,7 +134,6 @@ export default function PrestamosPorClienteScreen({
         item.tiempo
       );
 
-      // 3️⃣ Calcular saldos acumulativos
       let saldo = total;
       const filasAbonos = abonos
         .sort(
@@ -168,7 +163,6 @@ export default function PrestamosPorClienteScreen({
           ? filasAbonos
           : `<tr><td colspan="3" style="text-align:center;">Sin registros aún</td></tr>`;
 
-      // 4️⃣ Generar el HTML del PDF
       const htmlContent = `
       <html>
         <body style="font-family: Arial; padding: 20px; border: 2px solid #000;">
@@ -206,14 +200,20 @@ export default function PrestamosPorClienteScreen({
       </html>
     `;
 
-      // 5️⃣ Generar y abrir vista previa del PDF
-      await Print.printAsync({ html: htmlContent }); // 👈 Muestra vista previa directamente
+      // Generar archivo PDF temporal
+      const { uri } = await Print.printToFileAsync({ html: htmlContent });
+
+      // Compartir el archivo
+      await Sharing.shareAsync(uri, {
+        mimeType: "application/pdf",
+        dialogTitle: "Compartir PDF de abonos",
+        UTI: "com.adobe.pdf",
+      });
     } catch (error) {
       console.error("Error generando PDF:", error);
-      Alert.alert("Error", "No se pudo generar el PDF.");
+      Alert.alert("Error", "No se pudo generar o compartir el PDF.");
     }
   };
-
   const renderItem = ({ item }: { item: Prestamo }) => {
     const totalCalculado = calcularTotalAPagar(
       item.cantidad,
@@ -255,7 +255,7 @@ export default function PrestamosPorClienteScreen({
         <View style={styles.actions}>
           {/* Botón Exportar PDF a la izquierda */}
           <TouchableOpacity
-            onPress={() => handleGeneratePDF(item)}
+            onPress={() => handleGenerateAndSharePDF(item)}
             style={{ marginRight: "auto" }} // Empuja los demás a la derecha
           >
             <Feather name="file-text" size={20} color="#9C27B0" />
