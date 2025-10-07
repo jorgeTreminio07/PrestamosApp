@@ -295,6 +295,33 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
 
   const cuotaPorDia = cuota(prestamo.periodo, totalAPagar, prestamo.tiempo);
 
+  // Devuelve el número de días de atraso (0 si no hay atraso)
+  function calcularDemora(fechaVencimiento: string): number {
+    if (!fechaVencimiento) return 0;
+
+    const hoy = new Date(); // Fecha actual
+    const vencimiento = new Date(fechaVencimiento);
+
+    // Convertimos a solo fecha sin horas para evitar errores
+    const hoySinHora = new Date(
+      hoy.getFullYear(),
+      hoy.getMonth(),
+      hoy.getDate()
+    );
+    const vencSinHora = new Date(
+      vencimiento.getFullYear(),
+      vencimiento.getMonth(),
+      vencimiento.getDate()
+    );
+
+    const diffTime = hoySinHora.getTime() - vencSinHora.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 0; // Solo retorna positivo si hay demora
+  }
+
+  const demoraDias = prestamo ? calcularDemora(prestamo.fechaVencimiento) : 0;
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -382,10 +409,18 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
           <Text
             style={[
               styles.value,
-              prestamo.deudaStatus ? styles.statusActive : styles.statusSettled,
+              demoraDias > 0
+                ? styles.demora
+                : prestamo.deudaStatus
+                ? styles.statusActive
+                : styles.statusSettled,
             ]}
           >
-            {prestamo.deudaStatus ? "Pendiente" : "Pagado (Saldado)"}
+            {demoraDias > 0
+              ? "Atrasado"
+              : prestamo.deudaStatus
+              ? "Pendiente"
+              : "Pagado (Saldado)"}
           </Text>
         </View>
 
@@ -400,12 +435,10 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
           </Text>
         </View>
 
-        {prestamo.demoraDias > 0 && (
+        {demoraDias > 0 && (
           <View style={styles.row}>
-            <Text style={styles.label}>Demora:</Text>
-            <Text style={[styles.value, styles.demora]}>
-              {prestamo.demoraDias} días
-            </Text>
+            <Text style={styles.label}>Dias Atrasados:</Text>
+            <Text style={[styles.value, styles.demora]}>{demoraDias} días</Text>
           </View>
         )}
       </View>

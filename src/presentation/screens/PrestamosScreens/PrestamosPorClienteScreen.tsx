@@ -228,6 +228,30 @@ export default function PrestamosPorClienteScreen({
       Alert.alert("Error", "No se pudo generar o compartir el PDF.");
     }
   };
+
+  function calcularDemora(fechaVencimiento: string): number {
+    if (!fechaVencimiento) return 0;
+
+    const hoy = new Date();
+    const vencimiento = new Date(fechaVencimiento);
+
+    const hoySinHora = new Date(
+      hoy.getFullYear(),
+      hoy.getMonth(),
+      hoy.getDate()
+    );
+    const vencSinHora = new Date(
+      vencimiento.getFullYear(),
+      vencimiento.getMonth(),
+      vencimiento.getDate()
+    );
+
+    const diffTime = hoySinHora.getTime() - vencSinHora.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 0;
+  }
+
   const renderItem = ({ item }: { item: Prestamo }) => {
     const totalCalculado = calcularTotalAPagar(
       item.cantidad,
@@ -235,6 +259,9 @@ export default function PrestamosPorClienteScreen({
       item.periodo,
       item.tiempo
     );
+
+    const demoraDias = calcularDemora(item.fechaVencimiento);
+
     return (
       <View style={styles.card}>
         <View style={styles.row}>
@@ -257,10 +284,18 @@ export default function PrestamosPorClienteScreen({
           <Text
             style={[
               styles.estado,
-              item.deudaStatus ? styles.estadoPendiente : styles.estadoPagado,
+              demoraDias > 0
+                ? styles.demora
+                : item.deudaStatus
+                ? styles.estadoPendiente
+                : styles.estadoPagado,
             ]}
           >
-            {item.deudaStatus ? "Pendiente" : "Pagado"}
+            {demoraDias > 0
+              ? "Atrasado"
+              : item.deudaStatus
+              ? "Pendiente"
+              : "Pagado (Saldado)"}
           </Text>
         </View>
         <View style={styles.row}>
@@ -439,4 +474,8 @@ const styles = StyleSheet.create({
   disabledButton: { backgroundColor: "#ccc" },
   paginationText: { color: "white", fontWeight: "bold" },
   pageInfo: { fontSize: 16, color: "#333" },
+  demora: {
+    backgroundColor: "#fbd5d5ff",
+    color: "#E53935",
+  },
 });
