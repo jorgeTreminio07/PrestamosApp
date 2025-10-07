@@ -10,6 +10,21 @@ import * as SQLite from 'expo-sqlite'; // Importamos SQLite para tipar la base d
 // en cada método.
 
 export default class ClienteRepository {
+
+
+    static async findById(id: string): Promise<Cliente | undefined> {
+    console.log(`Buscando cliente por ID: ${id}`);
+    const db = await getDB();
+
+    // Usamos getFirstAsync para obtener un solo registro
+    const cliente = await db.getFirstAsync<Cliente>(
+      'SELECT * FROM clientes WHERE id = ?',
+      [id]
+    );
+
+    // Si el cliente es null o undefined, devolvemos undefined
+    return cliente ?? undefined;
+  }
  
   // 1. OBTENER TODOS
   static async getAll(): Promise<Cliente[]> {
