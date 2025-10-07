@@ -7,6 +7,7 @@ import UsuariosScreen from "../../presentation/screens/UsuariosScreens/UsuariosS
 import PrestamosPorClienteScreen from "../../presentation/screens/PrestamosScreens/PrestamosPorClienteScreen";
 import DetallePrestamoScreen from "../../presentation/screens/PrestamosScreens/DetallePrestamoScreen";
 import HistorialAbonosScreen from "../../presentation/screens/AbonosScreens/HistorialAbonosScreen";
+import ConfiguracionesScreen from "../../presentation/screens/ConfiguracionesScreens/ConfiguracionesScreen";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   PrestamosPorCliente: { clienteId: string; clienteNombre: string };
   DetallePrestamo: { prestamoId: string };
   HistorialAbonos: { prestamoId: string };
+  Configuraciones: undefined;
 };
 
 interface AppNavigatorProps {
@@ -46,6 +48,12 @@ export default function AppNavigator({ onLogout }: AppNavigatorProps) {
         <Stack.Screen
           name="HistorialAbonos"
           component={HistorialAbonosScreen}
+          options={{ title: "" }}
+        />
+
+        <Stack.Screen
+          name="Configuraciones"
+          component={ConfiguracionesScreen}
           options={{ title: "" }}
         />
       </Stack.Navigator>

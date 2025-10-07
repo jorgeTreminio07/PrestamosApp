@@ -64,6 +64,12 @@ export default function HomeScreen({ navigation, onLogout }: Props) {
         onPress={() => navigation.navigate("Usuarios")}
       />
 
+      <MenuCard
+        title="Ajustes"
+        iconName="settings" // Icono de perno
+        onPress={() => navigation.navigate("Configuraciones")}
+      />
+
       <PrestamoModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

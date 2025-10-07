@@ -19,6 +19,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import AbonoRepository from "../../../data/repositories/AbonoRepository";
 import ClienteRepository from "../../../data/repositories/ClienteRepository";
+import ConfiguracionRepository from "../../../data/repositories/ConfiguracionesRepository";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -126,6 +127,7 @@ export default function PrestamosPorClienteScreen({
     try {
       const cliente = await ClienteRepository.findById(item.clienteId);
       const abonos = await AbonoRepository.getByPrestamoId(item.id);
+      const configuraciones = await ConfiguracionRepository.get();
 
       const total = calcularTotalAPagar(
         item.cantidad,
@@ -174,9 +176,10 @@ export default function PrestamosPorClienteScreen({
       const htmlContent = `
       <html>
         <body style="font-family: Arial; padding: 20px; border: 2px solid #000;">
-          <h2 style="text-align:center;">MIMI TE PRESTA</h2>
-          <p><b>Dir.:</b> Mercado Terminal de Buses León, Nic.</p>
-          <p><b>Resp.:</b> Yimi Balladares</p>
+          <h2 style="text-align:center;">${configuraciones?.nombreEmpresa}</h2>
+          <p><b>Dir.:</b>${configuraciones?.direccion}</p>
+          <p><b>Resp.:</b> ${configuraciones?.nombreResponsable}</p>
+          <p><b>Telefono Responsable.:</b> ${configuraciones?.telefono}</p>
           <hr />
           <p><b>Nombre:</b> ${cliente?.nombre || clienteNombre}</p>
           <p><b>N° Teléfono:</b> ${
@@ -206,9 +209,7 @@ export default function PrestamosPorClienteScreen({
             ${tablaAbonos}
           </table>
           <br/><br/>
-          <p style="text-align:center;">Porque Jehová es justo, y ama la justicia;<br/>
-          El hombre recto mirará su rostro.<br/>
-          <b>Salmos 11:7</b></p>
+          <p style="text-align:center;">${configuraciones?.frase}</p>
           <p style="text-align:right;">Firma: _____________________</p>
         </body>
       </html>

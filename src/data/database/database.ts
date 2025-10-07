@@ -77,6 +77,17 @@ export const initDB = async (): Promise<void> => {
         `
     );
 
+    //tabla datos de configuracion
+    await db.execAsync(
+        `CREATE TABLE IF NOT EXISTS configuracion (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombreEmpresa TEXT NOT NULL,
+            nombreResponsable TEXT NOT NULL,
+            direccion TEXT NOT NULL,
+            telefono TEXT NOT NULL,
+            frase TEXT
+        );`
+    );
 };
 
 // Función para obtener la instancia de la DB ya conectada
