@@ -59,6 +59,12 @@ export default function HomeScreen({ navigation, onLogout }: Props) {
         }}
       />
       <MenuCard
+        title="Reportes"
+        iconName="assessment"
+        onPress={() => navigation.navigate("Reportes")}
+      />
+
+      <MenuCard
         title="Usuarios"
         iconName="group"
         onPress={() => navigation.navigate("Usuarios")}
