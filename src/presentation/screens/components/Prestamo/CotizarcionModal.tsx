@@ -114,7 +114,11 @@ export default function CotizacionModal({
               <View style={styles.detailRow}>
                 <Text style={styles.label}>Cantidad Prestada:</Text>
                 <Text style={styles.value}>
-                  {moneda} {numCantidad.toFixed(2)}
+                  {moneda}{" "}
+                  {numCantidad.toLocaleString("es-NI", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </Text>
               </View>
               <View style={styles.detailRow}>
@@ -133,14 +137,22 @@ export default function CotizacionModal({
               <View style={styles.detailRow}>
                 <Text style={styles.labelTotal}>TOTAL A PAGAR:</Text>
                 <Text style={styles.valueTotal}>
-                  {moneda} {totalAPagar.toFixed(2)}
+                  {moneda}{" "}
+                  {totalAPagar.toLocaleString("es-NI", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </Text>
               </View>
 
               <View style={styles.detailRow}>
                 <Text style={styles.labelTotal}>Cuota Diaria Estimada:</Text>
                 <Text style={styles.valueTotal}>
-                  {moneda} {cuotaPorDia.toFixed(2)}
+                  {moneda}{" "}
+                  {cuotaPorDia.toLocaleString("es-NI", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </Text>
               </View>
 

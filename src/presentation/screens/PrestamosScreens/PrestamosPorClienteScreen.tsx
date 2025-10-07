@@ -147,11 +147,19 @@ export default function PrestamosPorClienteScreen({
             <td style="padding:5px; text-align:center;">${formatDateToDDMMYY(
               abono.dateAbono
             )}</td>
-            <td style="padding:5px; text-align:center;">C$ ${abono.cantidadAbono.toFixed(
-              2
+            <td style="padding:5px; text-align:center;">C$ ${abono.cantidadAbono.toLocaleString(
+              "es-NI",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }
             )}</td>
-            <td style="padding:5px; text-align:center;">C$ ${saldo.toFixed(
-              2
+            <td style="padding:5px; text-align:center;">C$ ${saldo.toLocaleString(
+              "es-NI",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }
             )}</td>
           </tr>
         `;
@@ -177,10 +185,16 @@ export default function PrestamosPorClienteScreen({
           <p><b>Dirección:</b> ${
             cliente?.direccion || "___________________________"
           }</p>
-          <p><b>Monto:</b> C$ ${item.cantidad.toFixed(2)}</p>
+          <p><b>Monto:</b> C$ ${item.cantidad.toLocaleString("es-NI", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}</p>
           <p><b>Interés:</b> ${item.interes}%</p>
           <p><b>Periodo:</b> ${item.periodo} ${item.tiempo}</p>
-          <p><b>Total a Pagar:</b> C$ ${total.toFixed(2)}</p>
+          <p><b>Total a Pagar:</b> C$ ${total.toLocaleString("es-NI", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}</p>
           <p><b>Fecha Préstamo:</b> ${formatDateToDDMMYY(item.datePrestamo)}</p>
           <br/>
           <table style="width:100%; border-collapse: collapse;" border="1">
@@ -232,7 +246,10 @@ export default function PrestamosPorClienteScreen({
             ]}
           >
             {item.moneda}
-            {totalCalculado.toFixed(2)}
+            {totalCalculado.toLocaleString("es-NI", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Text>
         </View>
         <View style={styles.row}>

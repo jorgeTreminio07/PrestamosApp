@@ -306,10 +306,13 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
         </View>
 
         <View style={styles.row}>
-          <Text style={styles.label}>Cantidad Original:</Text>
+          <Text style={styles.label}>Cantidad Prestada:</Text>
           <Text style={styles.value}>
             {prestamo.moneda}
-            {prestamo.cantidad.toFixed(2)}
+            {prestamo.cantidad.toLocaleString("es-NI", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Text>
         </View>
 
@@ -322,7 +325,10 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
           <Text style={styles.label}>Total a Pagar:</Text>
           <Text style={[styles.value, styles.highlightBlue]}>
             {prestamo.moneda}
-            {totalAPagar.toFixed(2)}
+            {totalAPagar.toLocaleString("es-NI", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Text>
         </View>
 
@@ -330,7 +336,10 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
           <Text style={styles.label}>Total Pendiente:</Text>
           <Text style={[styles.value, styles.highlightRed]}>
             {prestamo.moneda}
-            {prestamo.totalPagar.toFixed(2)}
+            {prestamo.totalPagar.toLocaleString("es-NI", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Text>
         </View>
 
@@ -338,7 +347,10 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
           <Text style={styles.label}>Monto Abonado:</Text>
           <Text style={[styles.value, styles.highlightGreen]}>
             {prestamo.moneda}
-            {prestamo.montoPagado.toFixed(2)}
+            {prestamo.montoPagado.toLocaleString("es-NI", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Text>
         </View>
 
@@ -381,7 +393,10 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
           <Text style={styles.label}>Cuota por día:</Text>
           <Text style={styles.value}>
             {prestamo.moneda}
-            {cuotaPorDia.toFixed(2)}
+            {cuotaPorDia.toLocaleString("es-NI", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Text>
         </View>
 

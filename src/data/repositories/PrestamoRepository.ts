@@ -204,8 +204,11 @@ export default class PrestamoRepository {
 
         // 3. Registrar el abono
         // Usamos la fecha actual para registrar el abono
-        const today = new Date().toISOString().split('T')[0];
-        
+        const hoy = new Date();
+        const today = `${hoy.getFullYear()}-${String(
+        hoy.getMonth() + 1
+        ).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
+
         await AbonoRepository.create({
             prestamoId: id,
             cantidadAbono: amount,
