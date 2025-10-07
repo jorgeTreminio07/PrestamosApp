@@ -4,6 +4,8 @@ import { Picker } from "@react-native-picker/picker";
 import Cliente from "../../../../domain/models/Cliente";
 import Prestamo, { Moneda, Tiempo } from "../../../../domain/models/Prestamo";
 import { AutocompleteDropdown } from "react-native-autocomplete-dropdown";
+// 1. Importar el nuevo modal de cotización
+import CotizacionModal from "./CotizarcionModal";
 
 interface Props {
   visible: boolean;
@@ -26,6 +28,10 @@ export default function PrestamoModal({
   const [interes, setInteres] = useState("");
   const [periodo, setPeriodo] = useState("");
   const [tiempo, setTiempo] = useState<Tiempo>("Días");
+
+  // 2. Estado para controlar el nuevo modal de cotización
+  const [isCotizacionModalVisible, setIsCotizacionModalVisible] =
+    useState(false);
 
   const [errores, setErrores] = useState({
     clienteId: false,
@@ -67,7 +73,10 @@ export default function PrestamoModal({
     const nuevosErrores = {
       clienteId: clienteId === "",
       cantidad: isNaN(parseFloat(cantidad)) || parseFloat(cantidad) <= 0,
-      interes: isNaN(parseFloat(interes)) || parseFloat(interes) < 0,
+      interes:
+        isNaN(parseFloat(interes)) ||
+        parseFloat(interes) < 0 ||
+        parseFloat(interes) > 100,
       periodo: isNaN(parseInt(periodo)) || parseInt(periodo) <= 0,
       periodoDias: tiempo === "Días" && parseInt(periodo) > 25,
     };
@@ -104,119 +113,143 @@ export default function PrestamoModal({
     onClose();
   };
 
+  // 3. Función para manejar la apertura del modal de cotización
+  const handleCotizar = () => {
+    // Aquí podrías validar los campos si fuera necesario antes de cotizar
+    setIsCotizacionModalVisible(true);
+  };
+
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.title}>
-            {prestamoToEdit ? "Editar Préstamo" : "Agregar Nuevo Préstamo"}
-          </Text>
-
-          {/* Cliente */}
-          <Text style={styles.label}>Cliente</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={clienteId}
-              onValueChange={(itemValue: string) => setClienteId(itemValue)}
-              enabled={!prestamoToEdit} // No editable si es edición
-            >
-              <Picker.Item label="Seleccione un cliente..." value="" />
-              {clientes.map((cliente) => (
-                <Picker.Item
-                  key={cliente.id}
-                  label={cliente.nombre}
-                  value={cliente.id}
-                />
-              ))}
-            </Picker>
-          </View>
-          {errores.clienteId && (
-            <Text style={styles.errorText}>Seleccione un cliente válido</Text>
-          )}
-
-          {/* Cantidad */}
-          <Text style={styles.label}>Cantidad Prestada</Text>
-          <TextInput
-            keyboardType="numeric"
-            value={cantidad}
-            onChangeText={setCantidad}
-            style={[styles.input, errores.cantidad && styles.inputError]}
-          />
-          {errores.cantidad && (
-            <Text style={styles.errorText}>Ingrese una cantidad válida</Text>
-          )}
-
-          {/* Moneda */}
-          <Text style={styles.label}>Moneda</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={moneda}
-              onValueChange={(itemValue: Moneda) =>
-                setMoneda(itemValue as Moneda)
-              }
-            >
-              <Picker.Item label="$ Dolar" value="$" />
-              <Picker.Item label="C$ Cordoba" value="C$" />
-            </Picker>
-          </View>
-
-          {/* Interés */}
-          <Text style={styles.label}>Interés (%)</Text>
-          <TextInput
-            keyboardType="numeric"
-            value={interes}
-            onChangeText={setInteres}
-            style={[styles.input, errores.interes && styles.inputError]}
-          />
-          {errores.interes && (
-            <Text style={styles.errorText}>Ingrese un interés válido</Text>
-          )}
-
-          {/* Periodo */}
-          <Text style={styles.label}>Periodo</Text>
-          <TextInput
-            keyboardType="numeric"
-            value={periodo}
-            onChangeText={setPeriodo}
-            style={[styles.input, errores.periodo && styles.inputError]}
-          />
-          {errores.periodo && (
-            <Text style={styles.errorText}>Ingrese un periodo válido</Text>
-          )}
-          {errores.periodoDias && (
-            <Text style={styles.errorText}>
-              Si el tiempo es "Días", el periodo debe ser menor a 26
+    <>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent
+        onRequestClose={onClose}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.title}>
+              {prestamoToEdit ? "Editar Préstamo" : "Agregar Nuevo Préstamo"}
             </Text>
-          )}
 
-          {/* Tiempo */}
-          <Text style={styles.label}>Tiempo</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={tiempo}
-              onValueChange={(itemValue: Tiempo) =>
-                setTiempo(itemValue as Tiempo)
-              }
-            >
-              <Picker.Item label="Días" value="Días" />
-              {/* <Picker.Item label="Semanas" value="Semanas" /> */}
-              <Picker.Item label="Meses" value="Meses" />
-            </Picker>
-          </View>
+            {/* Cliente */}
+            <Text style={styles.label}>Cliente</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={clienteId}
+                onValueChange={(itemValue: string) => setClienteId(itemValue)}
+                enabled={!prestamoToEdit} // No editable si es edición
+              >
+                <Picker.Item label="Seleccione un cliente..." value="" />
+                {clientes.map((cliente) => (
+                  <Picker.Item
+                    key={cliente.id}
+                    label={cliente.nombre}
+                    value={cliente.id}
+                  />
+                ))}
+              </Picker>
+            </View>
+            {errores.clienteId && (
+              <Text style={styles.errorText}>Seleccione un cliente válido</Text>
+            )}
 
-          {/* Botones */}
-          <View style={styles.buttons}>
-            <Button title="Cancelar" onPress={onClose} color="#888" />
-            <Button title="Guardar" onPress={handleSave} />
+            {/* Cantidad */}
+            <Text style={styles.label}>Cantidad Prestada</Text>
+            <TextInput
+              keyboardType="numeric"
+              value={cantidad}
+              onChangeText={setCantidad}
+              style={[styles.input, errores.cantidad && styles.inputError]}
+            />
+            {errores.cantidad && (
+              <Text style={styles.errorText}>Ingrese una cantidad válida</Text>
+            )}
+
+            {/* Moneda */}
+            <Text style={styles.label}>Moneda</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={moneda}
+                onValueChange={(itemValue: Moneda) =>
+                  setMoneda(itemValue as Moneda)
+                }
+              >
+                <Picker.Item label="$ Dolar" value="$" />
+                <Picker.Item label="C$ Cordoba" value="C$" />
+              </Picker>
+            </View>
+
+            {/* Interés */}
+            <Text style={styles.label}>Interés (%)</Text>
+            <TextInput
+              keyboardType="numeric"
+              value={interes}
+              onChangeText={setInteres}
+              style={[styles.input, errores.interes && styles.inputError]}
+            />
+            {errores.interes && (
+              <Text style={styles.errorText}>
+                Ingrese un interés válido (0-100)
+              </Text>
+            )}
+
+            {/* Periodo */}
+            <Text style={styles.label}>Periodo</Text>
+            <TextInput
+              keyboardType="numeric"
+              value={periodo}
+              onChangeText={setPeriodo}
+              style={[styles.input, errores.periodo && styles.inputError]}
+            />
+            {errores.periodo && (
+              <Text style={styles.errorText}>Ingrese un periodo válido</Text>
+            )}
+            {errores.periodoDias && (
+              <Text style={styles.errorText}>
+                Si el tiempo es "Días", el periodo debe ser menor a 26
+              </Text>
+            )}
+
+            {/* Tiempo */}
+            <Text style={styles.label}>Tiempo</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={tiempo}
+                onValueChange={(itemValue: Tiempo) =>
+                  setTiempo(itemValue as Tiempo)
+                }
+              >
+                <Picker.Item label="Días" value="Días" />
+                {/* <Picker.Item label="Semanas" value="Semanas" /> */}
+                <Picker.Item label="Meses" value="Meses" />
+              </Picker>
+            </View>
+
+            {/* Botones */}
+            <View style={styles.buttons}>
+              <Button title="Cancelar" onPress={onClose} color="#888" />
+              {/* 4. Botón Cotizar */}
+              <Button title="Cotizar" onPress={handleCotizar} color="#17A2B8" />
+              <Button title="Guardar" onPress={handleSave} />
+            </View>
           </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+
+      {/* 5. Renderizar el nuevo Modal de Cotización */}
+      <CotizacionModal
+        visible={isCotizacionModalVisible}
+        onClose={() => setIsCotizacionModalVisible(false)}
+        // PROPIEDADES REQUERIDAS POR CotizacionModal:
+        cantidad={cantidad}
+        interes={interes}
+        periodo={periodo}
+        tiempo={tiempo}
+        moneda={moneda}
+      />
+    </>
   );
 }
 
@@ -269,5 +302,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
+    // Ajustar espacio entre los 3 botones
+    gap: 10,
   },
 });
