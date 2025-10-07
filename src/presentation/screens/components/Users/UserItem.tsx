@@ -62,7 +62,7 @@ export default function UserItem({ usuario, onEdit, onDelete }: Props) {
           <View style={styles.menuBox}>
             <TouchableOpacity style={styles.menuOption} onPress={handleView}>
               <Text style={[styles.menuText, { color: "#2196F3" }]}>
-                Ver Detalles
+                Ver Detalles de Usuario
               </Text>
             </TouchableOpacity>
             <View style={styles.separator} />
@@ -82,7 +82,7 @@ export default function UserItem({ usuario, onEdit, onDelete }: Props) {
               style={[styles.menuOption, styles.cancelButton]}
               onPress={() => setMenuVisible(false)}
             >
-              <Text style={styles.menuText}>Cancelar</Text>
+              <Text style={[styles.menuText, { color: "#fff" }]}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 18,
-    fontWeight: "normal",
+    fontWeight: "bold",
     color: "#333",
   },
   separator: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     marginTop: 10,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#888",
     borderRadius: 10,
   },
 });

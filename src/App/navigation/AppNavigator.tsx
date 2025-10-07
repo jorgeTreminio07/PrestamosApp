@@ -54,7 +54,7 @@ export default function AppNavigator({ onLogout }: AppNavigatorProps) {
         <Stack.Screen
           name="Configuraciones"
           component={ConfiguracionesScreen}
-          options={{ title: "" }}
+          options={{ title: "Configuración de la Empresa" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

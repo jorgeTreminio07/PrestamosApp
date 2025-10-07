@@ -82,8 +82,6 @@ export default function ConfiguracionesScreen() {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Configuración de la Empresa</Text>
-
         <Text style={styles.label}>Nombre de la Empresa</Text>
         <TextInput
           style={styles.input}
