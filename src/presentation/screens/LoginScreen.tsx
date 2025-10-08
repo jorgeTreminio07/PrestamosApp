@@ -58,7 +58,9 @@ export default function LoginScreen({ onLoginSuccess }: Props) {
   return (
     <View style={loginStyles.container}>
       <Text style={loginStyles.title}>Sistema de Gestión de Prestamos</Text>
-      <Text style={loginStyles.subtitle}>Inicia Sesión para Continuar</Text>
+      <Text style={loginStyles.subtitle}>
+        Bienvenido! por favor ingrese sus credenciales
+      </Text>
 
       <View style={loginStyles.card}>
         <TextInput
@@ -104,7 +106,7 @@ export default function LoginScreen({ onLoginSuccess }: Props) {
           {loading ? (
             <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
-            <Text style={loginStyles.buttonText}>Entrar</Text>
+            <Text style={loginStyles.buttonText}>Iniciar Sesión</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -131,6 +133,8 @@ const loginStyles = StyleSheet.create({
     fontSize: 18,
     color: "#E0E0E0",
     marginBottom: 40,
+    justifyContent: "center",
+    textAlign: "center",
   },
   card: {
     width: "100%",
