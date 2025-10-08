@@ -64,70 +64,32 @@ const ReportesScreen = () => {
   };
 
   // --- Exportar a Excel con diseño ---
-  const exportToExcel = async (
-    data: any[],
-    fileName: string,
-    fechaInicio?: string,
-    fechaFinal?: string
-  ) => {
+  const exportToExcel = async (data: any[], fileName: string) => {
     try {
       if (!data || data.length === 0) {
         Alert.alert("Exportar a Excel", "No hay datos para exportar.");
         return;
       }
 
-      // --- Preparar datos: agregar formato a números ---
+      // --- Preparar datos: agregar moneda a los montos ---
       const formattedData = data.map((row) => {
         const newRow: any = { ...row };
-        const moneda = row.moneda || "";
+        const moneda = row.moneda || ""; // Tomamos la moneda de la fila
+
         Object.keys(newRow).forEach((key) => {
           if (typeof newRow[key] === "number") {
-            newRow[key] = Number(newRow[key]).toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            });
+            // Formateamos el número con 0,000.00 y agregamos la moneda
+            newRow[key] = `${moneda} ${Number(newRow[key]).toLocaleString(
+              "en-US",
+              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+            )}`;
           }
         });
+
         return newRow;
       });
 
       const ws = XLSX.utils.json_to_sheet(formattedData);
-
-      // --- Sumas de ganancias según moneda ---
-      let sumaC = 0;
-      let sumaD = 0;
-      data.forEach((row) => {
-        if (row.moneda === "C$")
-          sumaC += Number(row.cantidadAbono ?? row.cantidadPrestada ?? 0);
-        if (row.moneda === "$")
-          sumaD += Number(row.cantidadAbono ?? row.cantidadPrestada ?? 0);
-      });
-
-      // --- Definir última fila para colocar las sumas ---
-      const range = XLSX.utils.decode_range(ws["!ref"]!);
-      const lastRow = range.e.r + 2; // Dejamos una fila de espacio
-
-      // --- Encabezado personalizado según tipo de reporte ---
-      let headerText = "";
-      if (fileName.startsWith("Arqueo"))
-        headerText = `Ganancias del ${fechaInicio}`;
-      else if (fileName.startsWith("Abonos"))
-        headerText = `Ganancias ${fechaInicio} - ${fechaFinal}`;
-      else if (fileName.startsWith("Prestamos"))
-        headerText = `Préstamos ${fechaInicio} - ${fechaFinal}`;
-
-      ws[`A${lastRow}`] = {
-        t: "s",
-        v: headerText,
-        s: { font: { bold: true } },
-      };
-
-      // --- Ganancias C$ y $ ---
-      ws[`A${lastRow + 1}`] = { t: "s", v: "Ganancia en C$" };
-      ws[`B${lastRow + 1}`] = { t: "s", v: "Ganancia en $ Dólares" };
-
-      ws[`A${lastRow + 2}`] = { t: "n", v: sumaC, z: "#,##0.00" }; // formato 0,000.00
-      ws[`B${lastRow + 2}`] = { t: "n", v: sumaD, z: "#,##0.00" };
 
       // --- Ancho automático de columnas ---
       ws["!cols"] = Object.keys(formattedData[0] || {}).map((key) => ({
@@ -139,6 +101,18 @@ const ReportesScreen = () => {
             )
           ) + 2,
       }));
+
+      // --- Estilo de encabezados ---
+      const range = XLSX.utils.decode_range(ws["!ref"]!);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (!ws[cellAddress]) continue;
+        ws[cellAddress].s = {
+          font: { bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "007bff" } },
+          alignment: { horizontal: "center" },
+        };
+      }
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Reporte");
