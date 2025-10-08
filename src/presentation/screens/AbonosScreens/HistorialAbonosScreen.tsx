@@ -99,6 +99,7 @@ const AbonoInputModal = ({
             placeholder="0.00"
             keyboardType="numeric"
             autoFocus={true}
+            placeholderTextColor="#A0A0A0"
           />
           {/* Campo para editar la fecha del abono */}
           <Text style={modalStyles.modalText}>
@@ -110,6 +111,7 @@ const AbonoInputModal = ({
             value={dateAbono}
             placeholder="YYYY-MM-DD"
             keyboardType="default"
+            placeholderTextColor="#A0A0A0"
           />
 
           <View style={modalStyles.buttonContainer}>

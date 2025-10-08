@@ -81,6 +81,7 @@ const AbonoInputModal = ({
             onChangeText={(text) => setAmount(text.replace(/[^0-9.]/g, ""))} // Permite solo números y punto decimal
             value={amount}
             placeholder="0.00"
+            placeholderTextColor="#A0A0A0"
             keyboardType="numeric"
             autoFocus={true}
           />

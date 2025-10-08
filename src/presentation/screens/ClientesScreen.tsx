@@ -161,6 +161,7 @@ export default function ClientesScreen() {
         value={search}
         onChangeText={handleSearch}
         style={styles.input}
+        placeholderTextColor="#A0A0A0"
       />
       <Button
         title="Crear Nuevo Cliente"

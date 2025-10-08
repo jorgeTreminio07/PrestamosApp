@@ -1,9 +1,18 @@
 // ./src/screens/UsuariosScreen/components/UserModal.tsx
 
 import React, { useState, useEffect } from "react";
-import { View, TextInput, Button, StyleSheet, Text, Modal } from "react-native";
+import {
+  View,
+  TextInput,
+  Button,
+  StyleSheet,
+  Text,
+  Modal,
+  TouchableOpacity,
+} from "react-native";
 import Usuario from "../../../../domain/models/Usuario";
 import uuid from "react-native-uuid";
+import { Feather } from "@expo/vector-icons"; //
 
 // 💡 Definimos los tipos para el estado de error de Usuario
 interface ErrorState {
@@ -40,6 +49,7 @@ export default function UserModal({
 
   // 💡 ESTADO DE ERRORES
   const [errors, setErrors] = useState<ErrorState>(initialErrors);
+  const [showPassword, setShowPassword] = useState(false);
 
   // 💡 EFECTO para rellenar campos y resetear errores
   useEffect(() => {
@@ -134,6 +144,7 @@ export default function UserModal({
           {/* Nombre */}
           <TextInput
             placeholder="Nombre"
+            placeholderTextColor="#A0A0A0"
             value={nombre}
             onChangeText={(text) => {
               setNombre(text);
@@ -148,6 +159,7 @@ export default function UserModal({
           {/* Correo */}
           <TextInput
             placeholder="Correo"
+            placeholderTextColor="#A0A0A0"
             value={correo}
             onChangeText={(text) => {
               setCorreo(text);
@@ -161,17 +173,30 @@ export default function UserModal({
             <Text style={styles.errorText}>Correo es obligatorio</Text>
           )}
 
-          {/* Contraseña */}
-          <TextInput
-            placeholder={getPasswordPlaceholder}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setErrors({ ...errors, password: false });
-            }}
-            style={getInputStyle("password")}
-            secureTextEntry // Oculta la entrada de texto
-          />
+          {/* Contraseña con icono de ojo 👁️ */}
+          <View style={styles.passwordContainer}>
+            <TextInput
+              placeholder={getPasswordPlaceholder}
+              placeholderTextColor="#A0A0A0"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                setErrors({ ...errors, password: false });
+              }}
+              style={[getInputStyle("password"), { flex: 1, marginBottom: 0 }]}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeButton}
+            >
+              <Feather
+                name={showPassword ? "eye" : "eye-off"}
+                size={20}
+                color="#555"
+              />
+            </TouchableOpacity>
+          </View>
           {errors.password && (
             <Text style={styles.errorText}>Contraseña es obligatoria</Text>
           )}
@@ -226,5 +251,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  eyeButton: {
+    paddingHorizontal: 10,
   },
 });

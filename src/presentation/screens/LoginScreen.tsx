@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import UsuarioRepository from "../../data/repositories/UsuarioRepository";
+import { Feather } from "@expo/vector-icons";
 
 interface Props {
   onLoginSuccess: () => void;
@@ -20,6 +21,7 @@ export default function LoginScreen({ onLoginSuccess }: Props) {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!correo.trim() || !password.trim()) {
@@ -67,15 +69,31 @@ export default function LoginScreen({ onLoginSuccess }: Props) {
           keyboardType="email-address"
           autoCapitalize="none"
           editable={!loading}
+          placeholderTextColor="#A0A0A0"
         />
-        <TextInput
-          placeholder="Contraseña"
-          value={password}
-          onChangeText={setPassword}
-          style={loginStyles.input}
-          secureTextEntry
-          editable={!loading}
-        />
+        {/* Campo contraseña con icono de ojo */}
+        <View style={loginStyles.passwordContainer}>
+          <TextInput
+            placeholder="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+            style={[loginStyles.input, { flex: 1, marginBottom: 0 }]}
+            secureTextEntry={!showPassword}
+            editable={!loading}
+            placeholderTextColor="#A0A0A0"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={loginStyles.eyeButton}
+            disabled={loading}
+          >
+            <Feather
+              name={showPassword ? "eye" : "eye-off"} // 👈 alterna icono
+              size={22}
+              color="#555"
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[loginStyles.button, loading && loginStyles.buttonDisabled]}
@@ -135,6 +153,7 @@ const loginStyles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 16,
     backgroundColor: "#F9F9F9",
+    color: "#000000ff",
   },
   button: {
     backgroundColor: "#2ecc71", // Verde de éxito
@@ -156,5 +175,18 @@ const loginStyles = StyleSheet.create({
     fontSize: 14,
     color: "#FFFFFF",
     opacity: 0.7,
+  },
+  eyeButton: {
+    paddingHorizontal: 12,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderColor: "#E0E0E0",
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 15,
+    backgroundColor: "#F9F9F9",
+    height: 50,
   },
 });

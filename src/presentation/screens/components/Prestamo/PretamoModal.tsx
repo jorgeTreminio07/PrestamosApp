@@ -143,6 +143,7 @@ export default function PrestamoModal({
                 selectedValue={clienteId}
                 onValueChange={(itemValue: string) => setClienteId(itemValue)}
                 enabled={!prestamoToEdit} // No editable si es edición
+                style={{ color: clienteId ? "#000000" : "#000000ff" }}
               >
                 <Picker.Item label="Seleccione un cliente..." value="" />
                 {clientes.map((cliente) => (
@@ -178,6 +179,7 @@ export default function PrestamoModal({
                 onValueChange={(itemValue: Moneda) =>
                   setMoneda(itemValue as Moneda)
                 }
+                style={{ color: clienteId ? "#000000" : "#000000ff" }}
               >
                 <Picker.Item label="C$ Cordoba" value="C$" />
                 <Picker.Item label="$ Dolar" value="$" />
@@ -223,6 +225,7 @@ export default function PrestamoModal({
                 onValueChange={(itemValue: Tiempo) =>
                   setTiempo(itemValue as Tiempo)
                 }
+                style={{ color: clienteId ? "#000000" : "#000000ff" }}
               >
                 <Picker.Item label="Días" value="Días" />
                 {/* <Picker.Item label="Semanas" value="Semanas" /> */}

@@ -154,6 +154,7 @@ export default function UsuariosScreen() {
       <TextInput
         //  Placeholder actualizado
         placeholder="Buscar por nombre o correo"
+        placeholderTextColor="#A0A0A0"
         value={search}
         onChangeText={handleSearch}
         style={styles.input}

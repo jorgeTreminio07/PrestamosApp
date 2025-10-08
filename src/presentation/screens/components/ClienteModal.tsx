@@ -121,6 +121,7 @@ export default function ClienteModal({
           {/* Nombre */}
           <TextInput
             placeholder="Nombre"
+            placeholderTextColor="#A0A0A0"
             value={nombre}
             onChangeText={(text) => {
               setNombre(text);
@@ -135,6 +136,7 @@ export default function ClienteModal({
           {/* Cédula */}
           <TextInput
             placeholder="Cédula"
+            placeholderTextColor="#A0A0A0"
             value={cedula}
             onChangeText={(text) => {
               setCedula(text);
@@ -149,6 +151,7 @@ export default function ClienteModal({
           {/* Dirección */}
           <TextInput
             placeholder="Dirección"
+            placeholderTextColor="#A0A0A0"
             value={direccion}
             onChangeText={(text) => {
               setDireccion(text);
@@ -163,6 +166,7 @@ export default function ClienteModal({
           {/* Teléfono */}
           <TextInput
             placeholder="Teléfono"
+            placeholderTextColor="#A0A0A0"
             value={numeroTelefono}
             onChangeText={(text) => {
               setNumeroTelefono(text);
