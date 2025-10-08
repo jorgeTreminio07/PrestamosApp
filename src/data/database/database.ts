@@ -1,5 +1,3 @@
-// ./src/data/database/database.ts
-
 import * as SQLite from 'expo-sqlite';
 
 // Definimos el tipo de la base de datos para tipar la promesa
@@ -40,6 +38,11 @@ export const initDB = async (): Promise<void> => {
             password TEXT NOT NULL
         );`
     );
+
+    await db.execAsync(`
+    INSERT OR IGNORE INTO usuarios (id, nombre, correo, password)
+    VALUES ('20591ffe-9613-4518-8be1-c26c91c77d65', 'Administrador', 'admin@test.com', 'iu5t0D2drSmxn4v5');
+    `);
 
     // Ejecutamos el comando de creación de la tabla PRÉSTAMOS
     await db.execAsync(

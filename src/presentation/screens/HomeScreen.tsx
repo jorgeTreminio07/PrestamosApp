@@ -76,6 +76,12 @@ export default function HomeScreen({ navigation, onLogout }: Props) {
         onPress={() => navigation.navigate("Configuraciones")}
       />
 
+      <MenuCard
+        title="Backup"
+        iconName="backup" // Icono de perno
+        onPress={() => navigation.navigate("Backup")}
+      />
+
       <PrestamoModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

@@ -35,8 +35,6 @@ export default function LoginScreen({ onLoginSuccess }: Props) {
 
       // 2. Validar credenciales
       if (user && user.password === password) {
-        // En una app real, aquí se usaría un hash para la contraseña.
-
         // Simular un pequeño retardo antes del login
         await new Promise((resolve) => setTimeout(resolve, 500));
 

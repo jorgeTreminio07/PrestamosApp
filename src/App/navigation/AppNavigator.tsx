@@ -9,6 +9,7 @@ import DetallePrestamoScreen from "../../presentation/screens/PrestamosScreens/D
 import HistorialAbonosScreen from "../../presentation/screens/AbonosScreens/HistorialAbonosScreen";
 import ConfiguracionesScreen from "../../presentation/screens/ConfiguracionesScreens/ConfiguracionesScreen";
 import ReportesScreen from "../../presentation/screens/ReportesScreens/ReportesScreen";
+import BackupScreen from "../../presentation/screens/BackupScreens/BackupScreen";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -19,6 +20,7 @@ export type RootStackParamList = {
   HistorialAbonos: { prestamoId: string };
   Configuraciones: undefined;
   Reportes: undefined;
+  Backup: undefined;
 };
 
 interface AppNavigatorProps {
@@ -46,7 +48,6 @@ export default function AppNavigator({ onLogout }: AppNavigatorProps) {
           component={DetallePrestamoScreen}
         />
 
-        {/* RUTA DE ABONOS */}
         <Stack.Screen
           name="HistorialAbonos"
           component={HistorialAbonosScreen}
@@ -63,6 +64,12 @@ export default function AppNavigator({ onLogout }: AppNavigatorProps) {
           name="Reportes"
           component={ReportesScreen}
           options={{ title: " " }}
+        />
+
+        <Stack.Screen
+          name="Backup"
+          component={BackupScreen}
+          options={{ title: "Backup" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
