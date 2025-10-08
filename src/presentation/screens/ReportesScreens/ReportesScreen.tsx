@@ -63,42 +63,27 @@ const ReportesScreen = () => {
     setFechaFinal(currentDate);
   };
 
-  // --- Exportar a Excel con diseño ---
-  const exportToExcel = async (data: any[], fileName: string) => {
+  // --- Exportar a Excel con diseño y totales ---
+  const exportToExcel = async (
+    data: any[],
+    fileName: string,
+    tipoReporte: string
+  ) => {
     try {
       if (!data || data.length === 0) {
         Alert.alert("Exportar a Excel", "No hay datos para exportar.");
         return;
       }
 
-      // --- Preparar datos: agregar moneda a los montos ---
-      const formattedData = data.map((row) => {
-        const newRow: any = { ...row };
-        const moneda = row.moneda || ""; // Tomamos la moneda de la fila
-
-        Object.keys(newRow).forEach((key) => {
-          if (typeof newRow[key] === "number") {
-            // Formateamos el número con 0,000.00 y agregamos la moneda
-            newRow[key] = `${moneda} ${Number(newRow[key]).toLocaleString(
-              "en-US",
-              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-            )}`;
-          }
-        });
-
-        return newRow;
-      });
-
-      const ws = XLSX.utils.json_to_sheet(formattedData);
+      // --- Crear hoja desde los datos originales ---
+      const ws = XLSX.utils.json_to_sheet(data);
 
       // --- Ancho automático de columnas ---
-      ws["!cols"] = Object.keys(formattedData[0] || {}).map((key) => ({
+      ws["!cols"] = Object.keys(data[0] || {}).map((key) => ({
         wch:
           Math.max(
             key.length,
-            ...formattedData.map((row) =>
-              row[key] ? String(row[key]).length : 0
-            )
+            ...data.map((row) => (row[key] ? String(row[key]).length : 0))
           ) + 2,
       }));
 
@@ -114,6 +99,67 @@ const ReportesScreen = () => {
         };
       }
 
+      // --- Determinar qué campo sumar según el tipo de reporte ---
+      let campoSuma = "";
+      if (tipoReporte === "abonos") campoSuma = "cantidadAbono";
+      else if (tipoReporte === "prestamos") campoSuma = "cantidadPrestada";
+      else if (tipoReporte === "arqueo") campoSuma = "abono";
+      else campoSuma = "";
+
+      // --- Calcular totales ---
+      const totalCordobas = data
+        .filter((row) => row.moneda === "C$")
+        .reduce((sum, row) => sum + (Number(row[campoSuma]) || 0), 0);
+
+      const totalDolares = data
+        .filter((row) => row.moneda === "$")
+        .reduce((sum, row) => sum + (Number(row[campoSuma]) || 0), 0);
+
+      // --- Insertar totales debajo de la tabla ---
+      const lastRow = range.e.r + 2; // dejar una fila vacía
+
+      ws[`C${lastRow}`] = {
+        v: "Totales C$",
+        s: {
+          font: { bold: true, color: { rgb: "006400" } }, // verde oscuro
+          fill: { fgColor: { rgb: "FFF59D" } }, // amarillo suave
+        },
+      };
+      ws[`D${lastRow}`] = {
+        v: totalCordobas,
+        t: "n",
+        z: "#,##0.00",
+        s: {
+          font: { bold: true, color: { rgb: "006400" } },
+          fill: { fgColor: { rgb: "FFF59D" } },
+        },
+      };
+
+      ws[`C${lastRow + 1}`] = {
+        v: "Totales $",
+        s: {
+          font: { bold: true, color: { rgb: "006400" } },
+          fill: { fgColor: { rgb: "FFF59D" } },
+        },
+      };
+      ws[`D${lastRow + 1}`] = {
+        v: totalDolares,
+        t: "n",
+        z: "#,##0.00",
+        s: {
+          font: { bold: true, color: { rgb: "006400" } },
+          fill: { fgColor: { rgb: "FFF59D" } },
+        },
+      };
+
+      // --- Actualizar rango ---
+      const newRange = {
+        s: { c: range.s.c, r: range.s.r },
+        e: { c: range.e.c, r: lastRow + 1 },
+      };
+      ws["!ref"] = XLSX.utils.encode_range(newRange);
+
+      // --- Crear libro y exportar ---
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Reporte");
 
@@ -150,7 +196,7 @@ const ReportesScreen = () => {
             "Reporte Generado",
             `Arqueo de Caja del ${fInicio}: ${results.length} registros.`
           );
-          await exportToExcel(results, `Arqueo_${fInicio}`);
+          await exportToExcel(results, `Arqueo_${fInicio}`, "arqueo");
           break;
         case 2:
           results = await getAbonosPorRangoFechas(fInicio, fFinal);
@@ -158,7 +204,11 @@ const ReportesScreen = () => {
             "Reporte Generado",
             `Abonos de ${fInicio} a ${fFinal}: ${results.length} registros.`
           );
-          await exportToExcel(results, `Abonos_${fInicio}_a_${fFinal}`);
+          await exportToExcel(
+            results,
+            `Abonos_${fInicio}_a_${fFinal}`,
+            "abonos"
+          );
           break;
         case 3:
           results = await getPrestamosPorRangoFechas(fInicio, fFinal);
@@ -166,7 +216,11 @@ const ReportesScreen = () => {
             "Reporte Generado",
             `Préstamos de ${fInicio} a ${fFinal}: ${results.length} registros.`
           );
-          await exportToExcel(results, `Prestamos_${fInicio}_a_${fFinal}`);
+          await exportToExcel(
+            results,
+            `Prestamos_${fInicio}_a_${fFinal}`,
+            "prestamos"
+          );
           break;
       }
       console.log("Resultados del reporte:", results);
@@ -199,7 +253,8 @@ const ReportesScreen = () => {
           );
           await exportToExcel(
             results,
-            `Clientes_Atrasados_${formatDate(new Date())}`
+            `Clientes_Atrasados_${formatDate(new Date())}`,
+            ""
           );
         } catch (error) {
           console.error("Error al generar Clientes Atrasados:", error);
