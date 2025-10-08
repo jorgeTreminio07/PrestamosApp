@@ -14,6 +14,7 @@ import * as DocumentPicker from "expo-document-picker";
 
 const BackupScreen = () => {
   const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const getDateTimeString = () => {
     const now = new Date();
@@ -58,7 +59,7 @@ const BackupScreen = () => {
 
   const handleImport = async () => {
     try {
-      setLoading(true);
+      setImporting(true);
 
       const result = await DocumentPicker.getDocumentAsync({
         type: ["application/*", "application/octet-stream"], // permite seleccionar archivos genéricos
@@ -97,13 +98,13 @@ const BackupScreen = () => {
       console.error(error);
       Alert.alert("Error", "No se pudo importar la base de datos");
     } finally {
-      setLoading(false);
+      setImporting(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Backup de Base de Datos</Text>
+      <Text style={styles.title}>Copia de Seguridad</Text>
 
       <TouchableOpacity
         style={styles.button}
@@ -113,19 +114,19 @@ const BackupScreen = () => {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Exportar DB</Text>
+          <Text style={styles.buttonText}>Exportar base de datos</Text>
         )}
       </TouchableOpacity>
 
       <TouchableOpacity
         style={[styles.button, { marginTop: 20, backgroundColor: "#4CAF50" }]}
         onPress={handleImport}
-        disabled={loading}
+        disabled={importing}
       >
-        {loading ? (
+        {importing ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Importar DB</Text>
+          <Text style={styles.buttonText}>Importar base de datos</Text>
         )}
       </TouchableOpacity>
     </View>
