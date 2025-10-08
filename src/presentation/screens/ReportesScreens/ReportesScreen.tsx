@@ -8,7 +8,7 @@ import {
   Platform,
   Modal,
   Alert,
-  ActivityIndicator, // 👈 Importado para el estado de carga
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -16,7 +16,6 @@ import * as XLSX from "xlsx";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
-// Asume que las funciones de tu repositorio están en este path
 import {
   getArqueoCajaPorDia,
   getAbonosPorRangoFechas,
@@ -24,24 +23,18 @@ import {
   getClientesAtrasados,
 } from "../../../data/repositories/ReportesRepository";
 
-// Define un tipo para identificar el reporte
 type ReporteId = 1 | 2 | 3 | 4;
 
 const ReportesScreen = () => {
-  // Estado para controlar el modal de selección de fechas
   const [modalVisible, setModalVisible] = useState(false);
-  // Estado para el ID del reporte que se va a generar
   const [currentReporteId, setCurrentReporteId] = useState<ReporteId | null>(
     null
   );
 
-  // Estados para las fechas
   const [fechaInicio, setFechaInicio] = useState(new Date());
   const [fechaFinal, setFechaFinal] = useState(new Date());
   const [showPickerInicio, setShowPickerInicio] = useState(false);
   const [showPickerFinal, setShowPickerFinal] = useState(false);
-
-  // ⭐️ Estado de Carga
   const [isLoading, setIsLoading] = useState(false);
 
   const reportes = [
@@ -51,19 +44,12 @@ const ReportesScreen = () => {
     { id: 4, nombre: "Clientes Atrasados" },
   ];
 
-  /**
-   * Formatea una fecha a string 'YYYY-MM-DD'
-   * @param date Objeto Date
-   * @returns String de fecha
-   */
   const formatDate = (date: Date) => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   };
-
-  // --- Funciones de Manejo de Fechas ---
 
   const onChangeFechaInicio = (event: any, selectedDate: Date | undefined) => {
     const currentDate = selectedDate || fechaInicio;
@@ -77,30 +63,90 @@ const ReportesScreen = () => {
     setFechaFinal(currentDate);
   };
 
-  // --- Lógica de Generación de Reportes ---
-
-  const exportToExcel = async (data: any[], fileName: string) => {
+  // --- Exportar a Excel con diseño ---
+  const exportToExcel = async (
+    data: any[],
+    fileName: string,
+    fechaInicio?: string,
+    fechaFinal?: string
+  ) => {
     try {
       if (!data || data.length === 0) {
         Alert.alert("Exportar a Excel", "No hay datos para exportar.");
         return;
       }
 
-      // Crear hoja de cálculo
-      const ws = XLSX.utils.json_to_sheet(data);
+      // --- Preparar datos: agregar formato a números ---
+      const formattedData = data.map((row) => {
+        const newRow: any = { ...row };
+        const moneda = row.moneda || "";
+        Object.keys(newRow).forEach((key) => {
+          if (typeof newRow[key] === "number") {
+            newRow[key] = Number(newRow[key]).toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            });
+          }
+        });
+        return newRow;
+      });
+
+      const ws = XLSX.utils.json_to_sheet(formattedData);
+
+      // --- Sumas de ganancias según moneda ---
+      let sumaC = 0;
+      let sumaD = 0;
+      data.forEach((row) => {
+        if (row.moneda === "C$")
+          sumaC += Number(row.cantidadAbono ?? row.cantidadPrestada ?? 0);
+        if (row.moneda === "$")
+          sumaD += Number(row.cantidadAbono ?? row.cantidadPrestada ?? 0);
+      });
+
+      // --- Definir última fila para colocar las sumas ---
+      const range = XLSX.utils.decode_range(ws["!ref"]!);
+      const lastRow = range.e.r + 2; // Dejamos una fila de espacio
+
+      // --- Encabezado personalizado según tipo de reporte ---
+      let headerText = "";
+      if (fileName.startsWith("Arqueo"))
+        headerText = `Ganancias del ${fechaInicio}`;
+      else if (fileName.startsWith("Abonos"))
+        headerText = `Ganancias ${fechaInicio} - ${fechaFinal}`;
+      else if (fileName.startsWith("Prestamos"))
+        headerText = `Préstamos ${fechaInicio} - ${fechaFinal}`;
+
+      ws[`A${lastRow}`] = {
+        t: "s",
+        v: headerText,
+        s: { font: { bold: true } },
+      };
+
+      // --- Ganancias C$ y $ ---
+      ws[`A${lastRow + 1}`] = { t: "s", v: "Ganancia en C$" };
+      ws[`B${lastRow + 1}`] = { t: "s", v: "Ganancia en $ Dólares" };
+
+      ws[`A${lastRow + 2}`] = { t: "n", v: sumaC, z: "#,##0.00" }; // formato 0,000.00
+      ws[`B${lastRow + 2}`] = { t: "n", v: sumaD, z: "#,##0.00" };
+
+      // --- Ancho automático de columnas ---
+      ws["!cols"] = Object.keys(formattedData[0] || {}).map((key) => ({
+        wch:
+          Math.max(
+            key.length,
+            ...formattedData.map((row) =>
+              row[key] ? String(row[key]).length : 0
+            )
+          ) + 2,
+      }));
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Reporte");
 
-      // Generar archivo en base64
       const wbout = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
-
-      // Guardar archivo en el sistema
       const uri = (FileSystem as any).cacheDirectory + `${fileName}.xlsx`;
-      await FileSystem.writeAsStringAsync(uri, wbout, {
-        encoding: "base64",
-      });
+      await FileSystem.writeAsStringAsync(uri, wbout, { encoding: "base64" });
 
-      // Compartir archivo
       await Sharing.shareAsync(uri, {
         mimeType:
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -113,14 +159,10 @@ const ReportesScreen = () => {
     }
   };
 
-  /**
-   * Genera el reporte actual basado en las fechas seleccionadas
-   */
   const generateReporte = async () => {
     if (!currentReporteId) return;
-
     setModalVisible(false);
-    setIsLoading(true); // ⭐️ Activar carga
+    setIsLoading(true);
 
     try {
       let results;
@@ -128,7 +170,7 @@ const ReportesScreen = () => {
       const fFinal = formatDate(fechaFinal);
 
       switch (currentReporteId) {
-        case 1: // Arqueo de caja
+        case 1:
           results = await getArqueoCajaPorDia(fInicio);
           Alert.alert(
             "Reporte Generado",
@@ -136,8 +178,7 @@ const ReportesScreen = () => {
           );
           await exportToExcel(results, `Arqueo_${fInicio}`);
           break;
-
-        case 2: // Abonos Realizados
+        case 2:
           results = await getAbonosPorRangoFechas(fInicio, fFinal);
           Alert.alert(
             "Reporte Generado",
@@ -145,8 +186,7 @@ const ReportesScreen = () => {
           );
           await exportToExcel(results, `Abonos_${fInicio}_a_${fFinal}`);
           break;
-
-        case 3: // Préstamos Realizados
+        case 3:
           results = await getPrestamosPorRangoFechas(fInicio, fFinal);
           Alert.alert(
             "Reporte Generado",
@@ -154,46 +194,39 @@ const ReportesScreen = () => {
           );
           await exportToExcel(results, `Prestamos_${fInicio}_a_${fFinal}`);
           break;
-
-        default:
-          break;
       }
       console.log("Resultados del reporte:", results);
     } catch (error) {
       console.error("Error al generar el reporte:", error);
       Alert.alert("Error", "Ocurrió un error al cargar los datos del reporte.");
     } finally {
-      setIsLoading(false); // ⭐️ Desactivar carga
+      setIsLoading(false);
     }
   };
 
-  /**
-   * Maneja la acción de click en el botón "Generar"
-   * @param id ID del reporte
-   */
   const handleAccion = async (id: ReporteId) => {
     setCurrentReporteId(id);
 
     switch (id) {
-      case 1: // Arqueo de caja (Requiere una sola fecha)
-      case 2: // Abonos Realizados (Requiere rango de fechas)
-      case 3: // Préstamos Realizados (Requiere rango de fechas)
-        // Restablece las fechas por defecto antes de mostrar el modal (opcional, pero buena práctica)
+      case 1:
+      case 2:
+      case 3:
         setFechaInicio(new Date());
         setFechaFinal(new Date());
         setModalVisible(true);
         break;
-      case 4: // Clientes Atrasados (Llama directamente a la función)
-        console.log("Generando reporte de Clientes Atrasados...");
-        setIsLoading(true); // ⭐️ Activar carga
+      case 4:
+        setIsLoading(true);
         try {
           const results = await getClientesAtrasados();
-          console.log("Resultados Clientes Atrasados:", results);
           Alert.alert(
             "Reporte Generado",
             `Clientes Atrasados: ${results.length} registros encontrados.`
           );
-          // **Aquí se implementaría la navegación a la pantalla de resultados**
+          await exportToExcel(
+            results,
+            `Clientes_Atrasados_${formatDate(new Date())}`
+          );
         } catch (error) {
           console.error("Error al generar Clientes Atrasados:", error);
           Alert.alert(
@@ -201,15 +234,12 @@ const ReportesScreen = () => {
             "No se pudo cargar el reporte de Clientes Atrasados."
           );
         } finally {
-          setIsLoading(false); // ⭐️ Desactivar carga
+          setIsLoading(false);
         }
-        break;
-      default:
         break;
     }
   };
 
-  // --- Componente Modal de Selección de Fechas ---
   const DateSelectionModal = () => (
     <Modal
       animationType="fade"
@@ -225,7 +255,6 @@ const ReportesScreen = () => {
               : "Seleccionar Rango de Fechas"}
           </Text>
 
-          {/* Selector de Fecha de Inicio/Única */}
           <Text style={styles.dateLabel}>
             {currentReporteId === 1 ? "Fecha Única:" : "Fecha Inicial:"}
           </Text>
@@ -239,7 +268,6 @@ const ReportesScreen = () => {
           </TouchableOpacity>
           {showPickerInicio && (
             <DateTimePicker
-              testID="dateTimePickerInicio"
               value={fechaInicio}
               mode="date"
               display="default"
@@ -247,7 +275,6 @@ const ReportesScreen = () => {
             />
           )}
 
-          {/* Selector de Fecha Final (Solo si no es Arqueo de Caja) */}
           {currentReporteId !== 1 && (
             <>
               <Text style={styles.dateLabel}>Fecha Final:</Text>
@@ -261,18 +288,16 @@ const ReportesScreen = () => {
               </TouchableOpacity>
               {showPickerFinal && (
                 <DateTimePicker
-                  testID="dateTimePickerFinal"
                   value={fechaFinal}
                   mode="date"
                   display="default"
                   onChange={onChangeFechaFinal}
-                  minimumDate={fechaInicio} // Asegura que la fecha final sea >= a la inicial
+                  minimumDate={fechaInicio}
                 />
               )}
             </>
           )}
 
-          {/* Botones de Acción */}
           <View style={styles.modalButtonContainer}>
             <TouchableOpacity
               style={[styles.modalButton, styles.buttonClose]}
@@ -298,7 +323,6 @@ const ReportesScreen = () => {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Reportes Disponibles 📊</Text>
 
-      {/* ⭐️ Indicador de carga visible sobre la pantalla */}
       {isLoading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#007bff" />
@@ -313,7 +337,7 @@ const ReportesScreen = () => {
             <TouchableOpacity
               style={[styles.button, isLoading && styles.buttonDisabled]}
               onPress={() => handleAccion(item.id as ReporteId)}
-              disabled={isLoading} // ⭐️ Deshabilitar si está cargando
+              disabled={isLoading}
             >
               <Feather name="file-text" size={20} color="#fff" />
               <Text style={styles.buttonText}>Generar</Text>
@@ -327,13 +351,8 @@ const ReportesScreen = () => {
   );
 };
 
-// --- Estilos Actualizados ---
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-    padding: 20,
-  },
+  container: { flex: 1, backgroundColor: "#f8f9fa", padding: 20 },
   title: {
     fontSize: 22,
     fontWeight: "bold",
@@ -358,25 +377,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#dee2e6",
   },
-  nombre: {
-    fontSize: 16,
-    color: "#333",
-    flex: 1,
-  },
+  nombre: { fontSize: 16, color: "#333", flex: 1 },
   button: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#007bff", // Color azul primario para el botón
+    backgroundColor: "#007bff",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,
   },
-  buttonText: {
-    color: "#fff",
-    marginLeft: 6,
-    fontWeight: "600",
-  },
-  // ⭐️ Estilos de Carga y Deshabilitado
+  buttonText: { color: "#fff", marginLeft: 6, fontWeight: "600" },
   loadingOverlay: {
     position: "absolute",
     top: 0,
@@ -385,23 +395,16 @@ const styles = StyleSheet.create({
     right: 0,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Fondo semi-transparente
-    zIndex: 10, // Asegura que esté por encima de todo
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    zIndex: 10,
   },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#333",
-  },
-  buttonDisabled: {
-    backgroundColor: "#adb5bd", // Color gris para indicar que está deshabilitado
-  },
-  // --- Estilos del Modal ---
+  loadingText: { marginTop: 10, fontSize: 16, color: "#333" },
+  buttonDisabled: { backgroundColor: "#adb5bd" },
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fondo oscuro semi-transparente
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
     margin: 20,
@@ -410,10 +413,7 @@ const styles = StyleSheet.create({
     padding: 35,
     alignItems: "stretch",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
@@ -427,12 +427,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333",
   },
-  dateLabel: {
-    fontSize: 14,
-    color: "#6c757d",
-    marginBottom: 5,
-    marginTop: 10,
-  },
+  dateLabel: { fontSize: 14, color: "#6c757d", marginBottom: 5, marginTop: 10 },
   dateInput: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -456,17 +451,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
   },
-  buttonGenerar: {
-    backgroundColor: "#28a745", // Verde
-  },
-  buttonClose: {
-    backgroundColor: "#dc3545", // Rojo
-  },
-  textStyle: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+  buttonGenerar: { backgroundColor: "#28a745" },
+  buttonClose: { backgroundColor: "#dc3545" },
+  textStyle: { color: "white", fontWeight: "bold", textAlign: "center" },
 });
 
 export default ReportesScreen;
