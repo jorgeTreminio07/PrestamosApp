@@ -24,7 +24,7 @@ export default function PrestamoModal({
 }: Props) {
   const [clienteId, setClienteId] = useState("");
   const [cantidad, setCantidad] = useState("");
-  const [moneda, setMoneda] = useState<Moneda>("$");
+  const [moneda, setMoneda] = useState<Moneda>("C$");
   const [interes, setInteres] = useState("");
   const [periodo, setPeriodo] = useState("");
   const [tiempo, setTiempo] = useState<Tiempo>("Días");
@@ -53,7 +53,7 @@ export default function PrestamoModal({
       } else {
         setClienteId("");
         setCantidad("");
-        setMoneda("$");
+        setMoneda("C$");
         setInteres("");
         setPeriodo("");
         setTiempo("Días");
@@ -179,8 +179,8 @@ export default function PrestamoModal({
                   setMoneda(itemValue as Moneda)
                 }
               >
-                <Picker.Item label="$ Dolar" value="$" />
                 <Picker.Item label="C$ Cordoba" value="C$" />
+                <Picker.Item label="$ Dolar" value="$" />
               </Picker>
             </View>
 
