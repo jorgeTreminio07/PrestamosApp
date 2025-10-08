@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
+    paddingTop: 60,
   },
   successMessage: {
     position: "absolute",

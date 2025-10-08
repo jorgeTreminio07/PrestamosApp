@@ -38,7 +38,7 @@ const ReportesScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const reportes = [
-    { id: 1, nombre: "Arqueo de caja" },
+    { id: 1, nombre: "Arqueo de abonos diario" },
     { id: 2, nombre: "Abonos Realizados" },
     { id: 3, nombre: "Préstamos Realizados" },
     { id: 4, nombre: "Clientes Atrasados" },
@@ -116,7 +116,7 @@ const ReportesScreen = () => {
         .reduce((sum, row) => sum + (Number(row[campoSuma]) || 0), 0);
 
       // --- Insertar totales debajo de la tabla ---
-      const lastRow = range.e.r + 2; // dejar una fila vacía
+      const lastRow = range.e.r + 5; // dejar una fila vacía
 
       ws[`C${lastRow}`] = {
         v: "Totales C$",
@@ -340,7 +340,7 @@ const ReportesScreen = () => {
               onPress={generateReporte}
               disabled={isLoading}
             >
-              <Text style={styles.textStyle}>Generar Reporte</Text>
+              <Text style={styles.textStyle}>Generar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -350,7 +350,7 @@ const ReportesScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Reportes Disponibles 📊</Text>
+      <Text style={styles.title}>Reportes Disponibles</Text>
 
       {isLoading && (
         <View style={styles.loadingOverlay}>
