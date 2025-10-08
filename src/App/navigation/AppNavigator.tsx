@@ -69,7 +69,7 @@ export default function AppNavigator({ onLogout }: AppNavigatorProps) {
         <Stack.Screen
           name="Backup"
           component={BackupScreen}
-          options={{ title: "Backup" }}
+          options={{ title: " " }}
         />
       </Stack.Navigator>
     </NavigationContainer>
