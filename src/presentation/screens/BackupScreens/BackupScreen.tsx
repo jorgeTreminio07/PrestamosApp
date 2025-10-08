@@ -61,12 +61,23 @@ const BackupScreen = () => {
       setLoading(true);
 
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["application/*", "application/octet-stream"], // <- permite archivos genéricos
+        type: ["application/*", "application/octet-stream"], // permite seleccionar archivos genéricos
         multiple: false,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const selectedFileUri = result.assets[0].uri;
+        const fileName = result.assets[0].name;
+
+        // Validar extensión
+        if (!fileName.toLowerCase().endsWith(".db")) {
+          Alert.alert(
+            "Archivo inválido",
+            "Por favor selecciona un archivo con extensión .db"
+          );
+          return; // salimos sin importar
+        }
+
         const dbFileUri = `${FileSystem.documentDirectory}SQLite/prestamos.db`;
 
         // Sobrescribir la base de datos actual
