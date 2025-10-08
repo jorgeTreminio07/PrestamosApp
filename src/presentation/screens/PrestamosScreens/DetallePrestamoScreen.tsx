@@ -217,6 +217,8 @@ export default function DetallePrestamoScreen({ route, navigation }: Props) {
                   alignItems: "center", // 👈 Centra verticalmente
                   paddingHorizontal: 10, // 👈 Espacio a los lados
                   width: "auto", // Se adapta al contenido
+                  borderRadius: 4,
+                  height: 38,
                 },
               ]}
             >
