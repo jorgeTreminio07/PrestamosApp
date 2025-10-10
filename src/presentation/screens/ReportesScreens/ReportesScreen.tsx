@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as XLSX from "xlsx";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
@@ -33,8 +33,9 @@ const ReportesScreen = () => {
 
   const [fechaInicio, setFechaInicio] = useState(new Date());
   const [fechaFinal, setFechaFinal] = useState(new Date());
-  const [showPickerInicio, setShowPickerInicio] = useState(false);
-  const [showPickerFinal, setShowPickerFinal] = useState(false);
+  const [isDatePickerVisibleInicio, setDatePickerVisibleInicio] =
+    useState(false);
+  const [isDatePickerVisibleFinal, setDatePickerVisibleFinal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const reportes = [
@@ -51,16 +52,20 @@ const ReportesScreen = () => {
     return `${y}-${m}-${d}`;
   };
 
-  const onChangeFechaInicio = (event: any, selectedDate: Date | undefined) => {
-    const currentDate = selectedDate || fechaInicio;
-    setShowPickerInicio(Platform.OS === "ios");
-    setFechaInicio(currentDate);
+  // Modal DatePicker Inicio
+  const showDatePickerInicio = () => setDatePickerVisibleInicio(true);
+  const hideDatePickerInicio = () => setDatePickerVisibleInicio(false);
+  const handleConfirmInicio = (date: Date) => {
+    setFechaInicio(date);
+    hideDatePickerInicio();
   };
 
-  const onChangeFechaFinal = (event: any, selectedDate: Date | undefined) => {
-    const currentDate = selectedDate || fechaFinal;
-    setShowPickerFinal(Platform.OS === "ios");
-    setFechaFinal(currentDate);
+  // Modal DatePicker Final
+  const showDatePickerFinal = () => setDatePickerVisibleFinal(true);
+  const hideDatePickerFinal = () => setDatePickerVisibleFinal(false);
+  const handleConfirmFinal = (date: Date) => {
+    setFechaFinal(date);
+    hideDatePickerFinal();
   };
 
   // --- Exportar a Excel con diseño y totales ---
@@ -75,10 +80,7 @@ const ReportesScreen = () => {
         return;
       }
 
-      // --- Crear hoja desde los datos originales ---
       const ws = XLSX.utils.json_to_sheet(data);
-
-      // --- Ancho automático de columnas ---
       ws["!cols"] = Object.keys(data[0] || {}).map((key) => ({
         wch:
           Math.max(
@@ -87,7 +89,6 @@ const ReportesScreen = () => {
           ) + 2,
       }));
 
-      // --- Estilo de encabezados ---
       const range = XLSX.utils.decode_range(ws["!ref"]!);
       for (let C = range.s.c; C <= range.e.c; ++C) {
         const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
@@ -99,14 +100,11 @@ const ReportesScreen = () => {
         };
       }
 
-      // --- Determinar qué campo sumar según el tipo de reporte ---
       let campoSuma = "";
       if (tipoReporte === "abonos") campoSuma = "cantidadAbono";
       else if (tipoReporte === "prestamos") campoSuma = "cantidadPrestada";
       else if (tipoReporte === "arqueo") campoSuma = "abono";
-      else campoSuma = "";
 
-      // --- Calcular totales ---
       const totalCordobas = data
         .filter((row) => row.moneda === "C$")
         .reduce((sum, row) => sum + (Number(row[campoSuma]) || 0), 0);
@@ -115,51 +113,20 @@ const ReportesScreen = () => {
         .filter((row) => row.moneda === "$")
         .reduce((sum, row) => sum + (Number(row[campoSuma]) || 0), 0);
 
-      // --- Insertar totales debajo de la tabla ---
-      const lastRow = range.e.r + 5; // dejar una fila vacía
+      const lastRow = range.e.r + 5;
 
-      ws[`C${lastRow}`] = {
-        v: "Totales C$",
-        s: {
-          font: { bold: true, color: { rgb: "006400" } }, // verde oscuro
-          fill: { fgColor: { rgb: "FFF59D" } }, // amarillo suave
-        },
-      };
-      ws[`D${lastRow}`] = {
-        v: totalCordobas,
-        t: "n",
-        z: "#,##0.00",
-        s: {
-          font: { bold: true, color: { rgb: "006400" } },
-          fill: { fgColor: { rgb: "FFF59D" } },
-        },
-      };
+      ws[`C${lastRow}`] = { v: "Totales C$", s: { font: { bold: true } } };
+      ws[`D${lastRow}`] = { v: totalCordobas, t: "n", z: "#,##0.00" };
 
-      ws[`C${lastRow + 1}`] = {
-        v: "Totales $",
-        s: {
-          font: { bold: true, color: { rgb: "006400" } },
-          fill: { fgColor: { rgb: "FFF59D" } },
-        },
-      };
-      ws[`D${lastRow + 1}`] = {
-        v: totalDolares,
-        t: "n",
-        z: "#,##0.00",
-        s: {
-          font: { bold: true, color: { rgb: "006400" } },
-          fill: { fgColor: { rgb: "FFF59D" } },
-        },
-      };
+      ws[`C${lastRow + 1}`] = { v: "Totales $", s: { font: { bold: true } } };
+      ws[`D${lastRow + 1}`] = { v: totalDolares, t: "n", z: "#,##0.00" };
 
-      // --- Actualizar rango ---
       const newRange = {
         s: { c: range.s.c, r: range.s.r },
         e: { c: range.e.c, r: lastRow + 1 },
       };
       ws["!ref"] = XLSX.utils.encode_range(newRange);
 
-      // --- Crear libro y exportar ---
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Reporte");
 
@@ -223,7 +190,6 @@ const ReportesScreen = () => {
           );
           break;
       }
-      console.log("Resultados del reporte:", results);
     } catch (error) {
       console.error("Error al generar el reporte:", error);
       Alert.alert("Error", "Ocurrió un error al cargar los datos del reporte.");
@@ -289,41 +255,24 @@ const ReportesScreen = () => {
           </Text>
           <TouchableOpacity
             style={styles.dateInput}
-            onPress={() => setShowPickerInicio(true)}
+            onPress={showDatePickerInicio}
             disabled={isLoading}
           >
             <Text>{formatDate(fechaInicio)}</Text>
             <Feather name="calendar" size={20} color="#6c757d" />
           </TouchableOpacity>
-          {showPickerInicio && (
-            <DateTimePicker
-              value={fechaInicio}
-              mode="date"
-              display="default"
-              onChange={onChangeFechaInicio}
-            />
-          )}
 
           {currentReporteId !== 1 && (
             <>
               <Text style={styles.dateLabel}>Fecha Final:</Text>
               <TouchableOpacity
                 style={styles.dateInput}
-                onPress={() => setShowPickerFinal(true)}
+                onPress={showDatePickerFinal}
                 disabled={isLoading}
               >
                 <Text>{formatDate(fechaFinal)}</Text>
                 <Feather name="calendar" size={20} color="#6c757d" />
               </TouchableOpacity>
-              {showPickerFinal && (
-                <DateTimePicker
-                  value={fechaFinal}
-                  mode="date"
-                  display="default"
-                  onChange={onChangeFechaFinal}
-                  minimumDate={fechaInicio}
-                />
-              )}
             </>
           )}
 
@@ -345,6 +294,21 @@ const ReportesScreen = () => {
           </View>
         </View>
       </View>
+
+      {/* Date Pickers modales */}
+      <DateTimePickerModal
+        isVisible={isDatePickerVisibleInicio}
+        mode="date"
+        onConfirm={handleConfirmInicio}
+        onCancel={hideDatePickerInicio}
+      />
+      <DateTimePickerModal
+        isVisible={isDatePickerVisibleFinal}
+        mode="date"
+        onConfirm={handleConfirmFinal}
+        onCancel={hideDatePickerFinal}
+        minimumDate={fechaInicio}
+      />
     </Modal>
   );
 
