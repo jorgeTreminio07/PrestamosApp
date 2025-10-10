@@ -9,6 +9,7 @@ export const getAbonosPorRangoFechas = async (fechaInicio: string, fechaFinal: s
       p.clienteNombre AS cliente,
       p.cantidad AS cantidadPrestada,
       p.moneda AS moneda,
+      p.totalPagar AS totalPagar,
       a.cantidadAbono AS cantidadAbono
     FROM abonos a
     INNER JOIN prestamos p ON a.prestamoId = p.id
@@ -26,8 +27,10 @@ export const getPrestamosPorRangoFechas = async (fechaInicio: string, fechaFinal
     SELECT 
       p.datePrestamo AS fecha,
       p.clienteNombre AS cliente,
+      p.cantidad AS cantidadPrestada,
+      p.interes || '%' AS interes,
       p.moneda AS moneda,
-      p.cantidad AS cantidadPrestada
+      p.totalPagar AS totalPagar
     FROM prestamos p
     WHERE DATE(p.datePrestamo) BETWEEN DATE(?) AND DATE(?)
     ORDER BY p.datePrestamo ASC;
@@ -43,6 +46,7 @@ export const getArqueoCajaPorDia = async (fecha: string) => {
     SELECT 
       a.dateAbono AS fecha,
       p.clienteNombre AS cliente,
+      p.totalPagar AS totalPagar,
       p.moneda AS moneda,
       a.cantidadAbono AS abono
     FROM abonos a
@@ -72,6 +76,7 @@ export const getClientesAtrasados = async () => {
       p.clienteNombre AS cliente,
       p.moneda AS moneda,
       p.cantidad AS cantidadPrestada,
+      p.interes || '%' AS interes,
       p.totalPagar AS totalPagar
     FROM prestamos p
     WHERE DATE(p.fechaVencimiento) < DATE(?)

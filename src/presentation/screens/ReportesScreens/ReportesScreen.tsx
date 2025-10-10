@@ -115,10 +115,16 @@ const ReportesScreen = () => {
 
       const lastRow = range.e.r + 5;
 
-      ws[`C${lastRow}`] = { v: "Totales C$", s: { font: { bold: true } } };
+      ws[`C${lastRow}`] = {
+        v: `Totales ${tipoReporte} C$`,
+        s: { font: { bold: true } },
+      };
       ws[`D${lastRow}`] = { v: totalCordobas, t: "n", z: "#,##0.00" };
 
-      ws[`C${lastRow + 1}`] = { v: "Totales $", s: { font: { bold: true } } };
+      ws[`C${lastRow + 1}`] = {
+        v: `Totales ${tipoReporte} $`,
+        s: { font: { bold: true } },
+      };
       ws[`D${lastRow + 1}`] = { v: totalDolares, t: "n", z: "#,##0.00" };
 
       const newRange = {
